@@ -54,6 +54,21 @@ export default function Sidebar() {
                   <p>เอกสารOne-report</p>
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/Adminholder" className="nav-link">
+                  <p>โครงสร้างผู้ถือหุ้น</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminevent" className="nav-link">
+                  <p>ปฎิทินกิจกรรม</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminfinanstates" className="nav-link">
+                  <p>งบการเงิน</p>
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>

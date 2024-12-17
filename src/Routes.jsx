@@ -14,6 +14,9 @@ import Admingovernan from './pages/Admingovernan/index'
 import Adminnews from './pages/Adminnews/index'
 import Admindocread from './pages/Admindocread/index'
 import Adminnewsprint from './pages/Adminnewsprint/index'
+import Adminholder from './pages/Adminholderstuc/index'
+import Adminevent from "./pages/Adminevent/index";
+import Adminfinanstates from "./pages/Adminfinanstates/index";
 
 
 
@@ -38,6 +41,9 @@ const RoutesPage = () => {
           <Route path="/Adminnews" element={<Adminnews />} />
           <Route path="/Admindocread" element={<Admindocread />} />
           <Route path="/Adminnewsprint" element={<Adminnewsprint />} />
+          <Route path="/Adminholder" element={<Adminholder />} />
+          <Route path="/Adminevent" element={<Adminevent />} />
+          <Route path="/Adminfinanstates" element={<Adminfinanstates />} />
           
         </Route>
       </Routes>

@@ -7,12 +7,12 @@ export default function Index() {
         <div className="container-fluid">
           <div className="row mb-2">
             <div className="col-sm-6">
-              <h1 className="m-0">หน้าแรก</h1>
+              <h1 className="m-0">หน้าหลัก</h1>
             </div>
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right">
                 <li className="breadcrumb-item">
-                  <li className="breadcrumb-item active">หน้าแรก</li>
+                  <li className="breadcrumb-item active">หน้าหลัก</li>
                 </li>
               </ol>
             </div>
