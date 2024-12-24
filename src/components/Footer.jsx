@@ -9,9 +9,8 @@ export default function Footer() {
         Copyright © 2023 <a href="https://full-stack-app.com">Full stack app Co.,Ltd</a>.
       </strong>{" "} */}
       <strong>
-        Copyright © 2024 <a href="">Krishanathep@gmail.com</a>.
+        ADMIN THAIRUNG IR
       </strong>{" "}
-      All rights reserved.
     </footer>
     </>
   )

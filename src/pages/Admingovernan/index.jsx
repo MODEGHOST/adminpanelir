@@ -21,7 +21,7 @@ function AdminIndex() {
 
   const fetchManuals = () => {
     axios
-      .get("http://localhost:8000/api/manuals")
+      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals")
       .then((response) => {
         setManuals(response.data.data);
         setLoading(false);
@@ -35,43 +35,60 @@ function AdminIndex() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
-    if (frontImage) formDataToSend.append("front_image", frontImage); // เพิ่มไฟล์รูปภาพ
-    if (downloadFile) formDataToSend.append("download_file", downloadFile); // เพิ่มไฟล์ดาวน์โหลด
-
+    if (frontImage) formDataToSend.append("front_image", frontImage);
+    if (downloadFile) formDataToSend.append("download_file", downloadFile);
+  
     try {
+      let response;
       if (editId) {
-        // Update manual
-        await axios.post(
-          `http://localhost:8000/api/manuals/${editId}`,
+        // อัปเดตข้อมูลที่มีอยู่
+        response = await axios.post(
+          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals/${editId}`, // ส่ง ID ที่ต้องการแก้ไข
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
       } else {
-        // Add new manual
-        await axios.post("http://localhost:8000/api/manuals", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        // เพิ่มข้อมูลใหม่
+        response = await axios.post(
+          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals",
+          formDataToSend,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
       }
-      fetchManuals();
-      resetForm();
+  
+      console.log(response.data);
+      fetchManuals(); // โหลดข้อมูลใหม่
+      resetForm(); // รีเซ็ตฟอร์ม
     } catch (error) {
-      console.error("Error submitting form:", error);
+      if (error.response) {
+        console.error("Error Response:", error.response.data.errors);
+        alert("เกิดข้อผิดพลาด: " + JSON.stringify(error.response.data.errors));
+      } else {
+        console.error("Error:", error.message);
+      }
     }
   };
+  
+  
 
-  const handleEdit = (manual) => {
-    setFormData({ title: manual.title });
-    setEditId(manual.id);
-    setShowForm(true);
+  const handleEdit = (id) => {
+    const manualToEdit = manuals.find((manual) => manual.id === id);
+    if (manualToEdit) {
+      setFormData({ title: manualToEdit.title });
+      setEditId(id); // กำหนดค่า ID เพื่ออัปเดต
+      setShowForm(true); // แสดงฟอร์ม
+    }
   };
+  
+  
 
   const handleDelete = (id) => {
     if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
       axios
-        .delete(`http://localhost:8000/api/manuals/${id}`)
+        .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals/${id}`)
         .then(() => fetchManuals())
         .catch((error) => console.error("Error deleting manual:", error));
     }
@@ -178,14 +195,14 @@ function AdminIndex() {
                   <td>{manual.title}</td>
                   <td style={{ width: "100px", height: "100px" }}>
                     <img
-                      src={`http://localhost:8000${manual.front_image_url}`}
+                      src={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${manual.front_image_url}`}
                       alt={manual.title}
                       style={{ width: "100px", height: "100px", objectFit: "cover" }}
                     />
                   </td>
                   <td style={{ width: "100px", height: "100px" }}>
                     <a
-                      href={`http://localhost:8000${manual.download_url}`}
+                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${manual.download_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

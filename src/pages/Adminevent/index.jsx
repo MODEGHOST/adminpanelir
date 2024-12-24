@@ -142,7 +142,7 @@ function AdminEvent() {
   };
 
   return (
-    <div className="container py-5">
+    <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
       <h2 className="text-center mb-4">จัดการข้อมูลกิจกรรม</h2>
       <div className="d-flex justify-content-between mb-3">
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>

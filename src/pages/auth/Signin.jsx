@@ -1,108 +1,118 @@
-import React,{useState} from "react";
-import { useForm } from "react-hook-form"
-import { useSignIn } from 'react-auth-kit'
-import { Link, useNavigate } from 'react-router-dom'
-import Preloader from "../../components/Preloader";
-import Swal from 'sweetalert2'
-import axios from 'axios'
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useSignIn } from "react-auth-kit";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 export default function Signin() {
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
-  const signIn = useSignIn()
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const signIn = useSignIn();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const REACT_APP_API = 'https://full-stack-app.com/laravel_auth_jwt_api/public/api/auth/login'
+  const API_URL = "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/admin/login"; // URL ของ API
 
-  const onSubmit = async data => {
+  const onSubmit = async (data) => {
     try {
-      setLoading(true)
-      await axios.post(REACT_APP_API, data)
-        .then((res)=>{
+      setLoading(true);
+      const response = await axios.post(API_URL, data); // ส่งข้อมูลไปยัง API
 
-          const token = res.data.access_token
+      const token = response.data.access_token;
 
-          if(token != null) {
-            if(signIn({
-              token: res.data.access_token,
-              authState: res.data.user,
-              expiresIn: 60,
-              tokenType: "Bearer",
-            })){
-              navigate('/')
-            }
-          } else {
-            console.log('เกิดข้อผิดพลาด!!!')
-          }
-        })
-    } catch(error){
-      console.log(error.response.data)
+      if (token) {
+        // บันทึกสถานะการเข้าสู่ระบบ
+        if (
+          signIn({
+            token: response.data.access_token,
+            authState: response.data.user,
+            expiresIn: 60, // กำหนดเวลา Token
+            tokenType: "Bearer",
+          })
+        ) {
+          navigate("/"); // นำไปยังหน้าแรก
+        }
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "เกิดข้อผิดพลาดในการเข้าสู่ระบบ!",
+        });
+      }
+    } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: error.response.data,
-      })
+        icon: "error",
+        title: "Oops...",
+        text: error.response?.data?.error || "เกิดข้อผิดพลาด!",
+      });
       reset({
         email: "",
         password: "",
       });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if(loading === true) {
-    return(
-      <Preloader/>
-    )
+  if (loading) {
+    return <div>กำลังโหลด...</div>;
   }
 
   return (
-    <body>
-      <div className="hold-transition login-page">
-        <div className="login-box">
-          <div className="login-logo">
-            <a href="#">
-              <b>WEB</b> THAIRUNG IR (นักลงทุนสัมพันธ์)
-            </a>
-          </div>
-          <div  id="auth_bg" className="card">
-            <div className="card-body login-card-body">
-              <p className="login-box-msg">Sign in to start your session</p>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="input-group mb-3">
-                <input className="form-control" value={'test@gmail.com'}  type="email" {...register("email", { required: true })} placeholder="Email" />
-                  <div className="input-group-append">
-                    <div className="input-group-text">
-                      <span className="fas fa-envelope" />
-                    </div>
+    <div className="hold-transition login-page">
+      <div className="login-box">
+        <div className="login-logo">
+          <a href="#">
+            <b>WEB</b> THAIRUNG IR (นักลงทุนสัมพันธ์)
+          </a>
+        </div>
+        <div id="auth_bg" className="card">
+          <div className="card-body login-card-body">
+            <p className="login-box-msg">Sign in to start your session</p>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="input-group mb-3">
+                <input
+                  className="form-control"
+                  type="email"
+                  {...register("email", { required: true })}
+                  placeholder="Email"
+                />
+                <div className="input-group-append">
+                  <div className="input-group-text">
+                    <span className="fas fa-envelope" />
                   </div>
                 </div>
-                {errors.email && <p className="text-danger">This username field is required</p>}
-                <div className="input-group mb-3">
-                <input className="form-control" value={'123456'}  type="password" {...register("password", { required: true })} placeholder="Password" />
-                  <div className="input-group-append">
-                    <div className="input-group-text">
-                      <span className="fas fa-lock" />
-                    </div>
+              </div>
+              {errors.email && (
+                <p className="text-danger">This email field is required</p>
+              )}
+              <div className="input-group mb-3">
+                <input
+                  className="form-control"
+                  type="password"
+                  {...register("password", { required: true })}
+                  placeholder="Password"
+                />
+                <div className="input-group-append">
+                  <div className="input-group-text">
+                    <span className="fas fa-lock" />
                   </div>
                 </div>
-                {errors.password && <p className="text-danger">This password field is required</p>}
-                <div className="row">
-                  <div className="col-8">
-                  </div>
-                  <div className="col-4">
-                    <button type="submit" className="btn btn-primary btn-block">
-                      Sign In
-                    </button>
-                  </div>
+              </div>
+              {errors.password && (
+                <p className="text-danger">This password field is required</p>
+              )}
+              <div className="row">
+                <div className="col-4 offset-8">
+                  <button type="submit" className="btn btn-primary btn-block">
+                    Sign In
+                  </button>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </body>
+    </div>
   );
 }
-

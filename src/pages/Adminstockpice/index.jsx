@@ -24,7 +24,7 @@ function Index() {
   useEffect(() => {
     // ดึงข้อมูลจาก API
     axios
-      .get("http://localhost:8000/api/stock-prices")
+      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices")
       .then((response) => {
         setStockPrices(response.data);
         setFilteredPrices(response.data); // ตั้งค่าเริ่มต้นให้เหมือนข้อมูลทั้งหมด
@@ -55,7 +55,7 @@ function Index() {
     if (editId) {
       // แก้ไขข้อมูล
       axios
-        .put(`http://localhost:8000/api/stock-prices/${editId}`, formData)
+        .put(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${editId}`, formData)
         .then((response) => {
           setStockPrices(
             stockPrices.map((price) =>
@@ -73,7 +73,7 @@ function Index() {
     } else {
       // เพิ่มข้อมูลใหม่
       axios
-        .post("http://localhost:8000/api/stock-prices", formData)
+        .post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices", formData)
         .then((response) => {
           setStockPrices([...stockPrices, response.data]);
           setFilteredPrices([...filteredPrices, response.data]);
@@ -110,7 +110,7 @@ function Index() {
   // ลบข้อมูล
   const handleDelete = (id) => {
     axios
-      .delete(`http://localhost:8000/api/stock-prices/${id}`)
+      .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${id}`)
       .then(() => {
         setStockPrices(stockPrices.filter((price) => price.id !== id));
         setFilteredPrices(filteredPrices.filter((price) => price.id !== id));
@@ -247,19 +247,29 @@ function Index() {
                       />
                     </div>
                     <div className="col-md-4">
-                      <label htmlFor="changepercent" className="form-label">
-                        % เปลี่ยนแปลง
-                      </label>
-                      <input
-                        type="number"
-                        id="changepercent"
-                        name="changepercent"
-                        className="form-control"
-                        value={formData.changepercent}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
+  <label htmlFor="changepercent" className="form-label">
+    % เปลี่ยนแปลง
+  </label>
+  <input
+    type="text"
+    id="changepercent"
+    name="changepercent"
+    className="form-control"
+    value={formData.changepercent}
+    onChange={(e) => {
+      const value = e.target.value;
+      // ตรวจสอบว่าเป็นเลขที่มี + หรือ - หรือเปล่า
+      if (/^[+-]?\d*$/.test(value)) {
+        handleChange(e);
+      }
+    }}
+    style={{
+      color: formData.changepercent < 0 ? 'red' : 'blue', // เปลี่ยนสีตามค่า
+    }}
+    required
+  />
+</div>
+
                     <div className="col-md-4">
                       <label htmlFor="trading_value" className="form-label">
                         มูลค่าการซื้อขาย

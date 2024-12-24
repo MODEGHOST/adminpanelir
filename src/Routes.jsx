@@ -17,6 +17,11 @@ import Adminnewsprint from './pages/Adminnewsprint/index'
 import Adminholder from './pages/Adminholderstuc/index'
 import Adminevent from "./pages/Adminevent/index";
 import Adminfinanstates from "./pages/Adminfinanstates/index";
+import Adminanalysis from "./pages/Adminanalysis/index";
+import Adminreportmuser from "./pages/Adminreportmuser/index";
+import Adminmeetinguser from "./pages/Adminmeetinguser/index";
+import Admindetailgeneration from "./pages/Admindetailgeneration/index";
+import AdminControuser from "./pages/AdminControuser/index";
 
 
 
@@ -44,6 +49,12 @@ const RoutesPage = () => {
           <Route path="/Adminholder" element={<Adminholder />} />
           <Route path="/Adminevent" element={<Adminevent />} />
           <Route path="/Adminfinanstates" element={<Adminfinanstates />} />
+          <Route path="/Adminanalysis" element={<Adminanalysis />} />
+          <Route path="/Adminreportmuser" element={<Adminreportmuser />} />
+          <Route path="/Adminmeetinguser" element={<Adminmeetinguser />} />
+          <Route path="/Admindetailgeneration" element={<Admindetailgeneration />} />
+          <Route path="/AdminControuser" element={<AdminControuser />} />
+
           
         </Route>
       </Routes>

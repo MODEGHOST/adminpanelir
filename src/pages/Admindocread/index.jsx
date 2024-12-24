@@ -20,7 +20,7 @@ function Admindocone() {
 
   const fetchDocReads = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/doc_read");
+      const response = await axios.get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read");
       setDocReads(response.data);
       setLoading(false);
     } catch (error) {
@@ -33,36 +33,37 @@ function Admindocone() {
 
     const data = new FormData();
     data.append("title", formData.title);
+    data.append("date", formData.date); // เพิ่ม date
     if (file) data.append("file", file);
 
     try {
       if (editId) {
-        // แก้ไขข้อมูล
-        await axios.post(
-          `http://localhost:8000/api/doc_read/${editId}`,
-          data,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
+        // หากเป็นการอัปเดต
+        await axios.post(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read/${editId}`, data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else {
-        // เพิ่มข้อมูลใหม่
-        await axios.post("http://localhost:8000/api/doc_read", data, {
+        // หากเป็นการเพิ่มข้อมูล
+        await axios.post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read", data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
       fetchDocReads();
       resetForm();
-      setShowForm(false); // ปิดฟอร์มหลังจากเพิ่ม/แก้ไขข้อมูล
     } catch (error) {
-      console.error("Error submitting data:", error);
+      if (error.response) {
+        console.error("Error Response:", error.response.data);
+        alert("Validation Error: " + JSON.stringify(error.response.data));
+      } else {
+        console.error("Error submitting data:", error.message);
+      }
     }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
       try {
-        await axios.delete(`http://localhost:8000/api/doc_read/${id}`);
+        await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read/${id}`);
         fetchDocReads();
       } catch (error) {
         console.error("Error deleting doc_read:", error);
@@ -70,14 +71,22 @@ function Admindocone() {
     }
   };
 
-  const handleEdit = (docRead) => {
-    setFormData({
-      title: docRead.title,
-      date: docRead.date,
-      qrCode: docRead.qr_code_path,
-    });
-    setEditId(docRead.id);
-    setShowForm(true); // เปิดฟอร์มแก้ไขข้อมูล
+  const handleEdit = async (id) => {
+    try {
+      // ส่งคำขอ GET เพื่อดึงข้อมูลเอกสารตาม ID
+      const response = await axios.get(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read/${id}`);
+
+      const docRead = response.data;
+      setFormData({
+        title: docRead.title,
+        date: docRead.date, // โหลด date จากฐานข้อมูล
+        qrCode: docRead.qr_code_path,
+      });
+      setEditId(docRead.id);
+      setShowForm(true); // แสดงฟอร์มแก้ไข
+    } catch (error) {
+      console.error("Error fetching document for edit:", error);
+    }
   };
 
   const resetForm = () => {
@@ -90,7 +99,7 @@ function Admindocone() {
   if (loading) return <div>กำลังโหลดข้อมูล...</div>;
 
   return (
-    <div className="container py-5">
+    <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
       <h1 className="text-center mb-4">จัดการเอกสาร One-Port</h1>
 
       {/* ค้นหาข้อมูลตามวันที่ */}
@@ -138,6 +147,21 @@ function Admindocone() {
             />
           </div>
           <div className="mb-3">
+            <label htmlFor="date" className="form-label">
+              วันที่
+            </label>
+            <input
+              type="date"
+              id="date"
+              className="form-control"
+              value={formData.date}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="mb-3">
             <label htmlFor="file" className="form-label">
               ไฟล์ PDF
             </label>
@@ -155,7 +179,7 @@ function Admindocone() {
             <div className="d-flex align-items-center">
               {formData.qrCode && (
                 <img
-                  src={`http://localhost:8000/storage/${formData.qrCode}`}
+                  src={`http://129.200.6.52/laravel_auth_jwt_api_omd/public/storage/${formData.qrCode}`}
                   alt="Generated QR Code"
                   style={{ width: "100px", height: "100px" }}
                 />
@@ -183,7 +207,7 @@ function Admindocone() {
             <th>ชื่อเอกสาร</th>
             <th>ไฟล์เอกสาร</th>
             <th>QR Code เอกสาร</th>
-            <th>วันที่สร้างเอกสาร</th>
+            <th>วันที่</th>
             {isAdmin && <th>การจัดการ</th>}
           </tr>
         </thead>
@@ -194,21 +218,25 @@ function Admindocone() {
               <td>{docRead.title}</td>
               <td>
                 <a
-                  href={`http://localhost:8000/storage/${docRead.file_path}`}
+                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public/storage/${docRead.file_path}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  ดาวน์โหลด PDF
+                  ดาวน์โหลด
                 </a>
               </td>
               <td>
-                <img
-                  src={`http://localhost:8000/storage/${docRead.qr_code_path}`}
-                  alt="QR Code"
-                  style={{ width: "100px", height: "100px" }}
-                />
+                {docRead.qr_code_path ? (
+                  <img
+                    src={`http://129.200.6.52/laravel_auth_jwt_api_omd/public/storage/${docRead.qr_code_path}`}
+                    alt="QR Code"
+                    style={{ width: "100px", height: "100px" }}
+                  />
+                ) : (
+                  "ไม่มี QR Code"
+                )}
               </td>
-              <td>{docRead.created_at}</td>
+              <td>{docRead.date || "N/A"}</td>
               {isAdmin && (
                 <td>
                   <button

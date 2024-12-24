@@ -4,270 +4,207 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
-
-function AdminnewsprintTable() {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [formData, setFormData] = useState({
-    id: null,
-    date: '',
-    title: '',
-    pdf_url: '',
-  });
-  const [editId, setEditId] = useState(null);
-  const [searchDate, setSearchDate] = useState('');
-  const [showForm, setShowForm] = useState(false);
+function Adminnewsprint() {
+  const [newsprints, setNewsprints] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const [currentPage, setCurrentPage] = useState(1); // หน้าปัจจุบัน
-  const itemsPerPage = 4; // จำนวนข้อมูลต่อหน้า
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({ title: '', date: '' });
+  const [pdfFile, setPdfFile] = useState(null); // สำหรับอัปโหลดไฟล์ PDF
+  const [editId, setEditId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
+    fetchNewsprints();
+  }, []);
+
+  const fetchNewsprints = () => {
     axios
-      .get('http://localhost:8000/api/newsprint')
+      .get('http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/newsprint')
       .then((response) => {
-        setData(response.data);
-        setFilteredData(response.data);
+        setNewsprints(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error fetching newsprint:', error);
+        console.error('Error fetching newsprints:', error);
+        setError('ไม่สามารถโหลดข้อมูลได้');
         setLoading(false);
       });
-  }, []);
-
-  const handleSearch = (e) => {
-    const date = e.target.value;
-    setSearchDate(date);
-
-    const filtered = data.filter((item) => item.date.includes(date));
-    setFilteredData(filtered);
-    setCurrentPage(1); // รีเซ็ตหน้ากลับไปหน้าแรกเมื่อค้นหา
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editId) {
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('date', formData.date);
+    if (pdfFile) formDataToSend.append('pdf_file', pdfFile);
+
+    try {
+      let response;
+      if (editId) {
+        response = await axios.post(
+          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/newsprint/${editId}`,
+          formDataToSend,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+      } else {
+        response = await axios.post(
+          'http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/newsprint',
+          formDataToSend,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+      }
+
+      console.log(response.data);
+      fetchNewsprints();
+      resetForm();
+    } catch (error) {
+      if (error.response) {
+        console.error('Error Response:', error.response.data.errors);
+        alert('เกิดข้อผิดพลาด: ' + JSON.stringify(error.response.data.errors));
+      } else {
+        console.error('Error:', error.message);
+      }
+    }
+  };
+
+  const handleEdit = (id) => {
+    const newsprintToEdit = newsprints.find((item) => item.id === id);
+    if (newsprintToEdit) {
+      setFormData({ title: newsprintToEdit.title, date: newsprintToEdit.date });
+      setEditId(id);
+      setShowForm(true);
+    }
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) {
       axios
-        .put(`http://localhost:8000/api/newsprint/${editId}`, formData)
-        .then((response) => {
-          setData(
-            data.map((item) =>
-              item.id === editId ? response.data : item
-            )
-          );
-          setFilteredData(
-            filteredData.map((item) =>
-              item.id === editId ? response.data : item
-            )
-          );
-          resetForm();
-        })
-        .catch((error) => console.error('Error updating print:', error));
-    } else {
-      axios
-        .post('http://localhost:8000/api/newsprint', formData)
-        .then((response) => {
-          setData([...data, response.data]);
-          setFilteredData([...filteredData, response.data]);
-          resetForm();
-        })
-        .catch((error) => console.error('Error adding newsprint:', error));
+        .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/newsprint/${id}`)
+        .then(() => fetchNewsprints())
+        .catch((error) => console.error('Error deleting newsprint:', error));
     }
   };
 
   const resetForm = () => {
-    setFormData({ id: null, date: '', title: '', pdf_url: '' });
+    setFormData({ title: '', date: '' });
+    setPdfFile(null);
     setEditId(null);
     setShowForm(false);
   };
 
-  const handleEdit = (id) => {
-    const item = data.find((newsprint) => newsprint.id === id);
-    setFormData(item);
-    setEditId(id);
-    setShowForm(true);
-  };
-
-  const handleDelete = (id) => {
-    axios
-      .delete(`http://localhost:8000/api/newsprint/${id}`)
-      .then(() => {
-        setData(data.filter((newsprint) => newsprint.id !== id));
-        setFilteredData(filteredData.filter((newsprint) => newsprint.id !== id));
-      })
-      .catch((error) => console.error('Error deleting newsprint:', error));
-  };
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  if (loading) return <div className="loading">กำลังโหลดข้อมูล...</div>;
+  if (error) return <div className="error">{error}</div>;
 
   return (
-    <div className="d-flex">
-      <div className="flex-grow-1">
-        <div className="container mt-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-          <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-            <h1 className="text-center mb-4">จัดการข้อมูลข่าวจากสื่อสิ่งพิมพ์</h1>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <div style={{ width: "15%" }}>
-                <label htmlFor="search-date" className="form-label">ค้นหาวันที่:</label>
+    <div className="container py-5">
+      <h1 className="text-center mb-4">จัดการข้อมูลข่าวจากสื่อสิ่งพิมพ์</h1>
+
+      <div className="d-flex justify-content-end mb-4">
+        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'ปิดฟอร์ม' : 'เพิ่มข้อมูล'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="card mb-4">
+          <div className="card-body">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <label htmlFor="title" className="form-label">หัวข้อข่าว</label>
                 <input
-                  type="date"
-                  id="search-date"
+                  type="text"
+                  id="title"
                   className="form-control"
-                  value={searchDate}
-                  onChange={handleSearch}
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
                 />
               </div>
-              <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-                {showForm ? "ปิดฟอร์ม" : "เพิ่มข้อมูล"}
-              </button>
-            </div>
-
-            {showForm && (
-              <div className="card mb-3">
-                <div className="card-body">
-                  <h5>{editId ? 'แก้ไขข่าว' : 'เพิ่มข่าว'}</h5>
-                  <form onSubmit={handleSubmit}>
-                    <div className="row g-3">
-                      <div className="col-md-4">
-                        <label htmlFor="date" className="form-label">วันที่</label>
-                        <input
-                          type="date"
-                          id="date"
-                          name="date"
-                          className="form-control"
-                          value={formData.date}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="title" className="form-label">หัวข้อข่าว</label>
-                        <input
-                          type="text"
-                          id="title"
-                          name="title"
-                          className="form-control"
-                          value={formData.title}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label htmlFor="pdf_url" className="form-label">ลิงก์เอกสาร</label>
-                        <input
-                          type="url"
-                          id="pdf_url"
-                          name="pdf_url"
-                          className="form-control"
-                          value={formData.pdf_url}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <button type="submit" className="btn btn-success mt-3">
-                      {editId ? 'บันทึกการแก้ไข' : 'เพิ่มข่าว'}
-                    </button>
-                  </form>
-                </div>
+              <div className="mb-3">
+                <label htmlFor="date" className="form-label">วันที่</label>
+                <input
+                  type="date"
+                  id="date"
+                  className="form-control"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  required
+                />
               </div>
-            )}
-
-            {loading ? (
-              <p>กำลังโหลดข้อมูล...</p>
-            ) : (
-              <>
-                <table className="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>วันที่</th>
-                      <th>หัวข้อข่าว</th>
-                      <th>ลิงก์เอกสาร</th>
-                      <th>วันที่สร้าง</th>
-                      <th>การจัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedData.length > 0 ? (
-                      paginatedData.map((newsprint) => (
-                        <tr key={newsprint.id}>
-                          <td>{newsprint.date}</td>
-                          <td>{newsprint.title}</td>
-                          <td style={{ width: "100px", height: "100px" }}>
-                            <a
-                              href={`http://localhost:8000${newsprint.pdf_url}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <img
-                                src="/public/assets/img/pdf.png"
-                                alt="ดาวน์โหลด"
-                                style={{ width: "100px", height: "100px" }}
-                              />
-                            </a>
-                          </td>
-                          <td>{newsprint.created_at}</td>
-                          <td>
-                            <button
-                              className="btn btn-warning me-3"
-                             style={{ padding: '0.5rem 1rem', fontSize: '1rem' }}
-                              onClick={() => handleEdit(newsprint.id)}
-                            >
-                              <FontAwesomeIcon icon={faEdit} className="me-1" />
-                                                
-                            </button>
-                            <button
-                              className="btn btn-danger"
-                              style={{ padding: '0.5rem 1rem', fontSize: '1rem' }}
-                              onClick={() => handleDelete(newsprint.id)}
-                            >
-                              <FontAwesomeIcon icon={faTrashAlt} className="me-1" />
-                                                
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center">ไม่พบข้อมูล</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-                <div className="pagination d-flex justify-content-center mt-3">
-                  {pageNumbers.map((page) => (
-                    <button
-                      key={page}
-                      className={`btn btn-sm ${page === currentPage ? "btn-primary" : "btn-outline-primary"} mx-1`}
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+              <div className="mb-3">
+                <label htmlFor="pdf_file" className="form-label">ไฟล์ PDF</label>
+                <input
+                  type="file"
+                  id="pdf_file"
+                  className="form-control"
+                  onChange={(e) => setPdfFile(e.target.files[0])}
+                />
+              </div>
+              <button type="submit" className="btn btn-success">
+                {editId ? 'บันทึกการแก้ไข' : 'เพิ่มข่าว'}
+              </button>
+              {editId && (
+                <button
+                  type="button"
+                  className="btn btn-secondary ms-2"
+                  onClick={resetForm}
+                >
+                  ยกเลิก
+                </button>
+              )}
+            </form>
           </div>
+        </div>
+      )}
+
+      <div className="card">
+        <div className="card-body">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>หัวข้อข่าว</th>
+                <th>วันที่</th>
+                <th>ไฟล์ PDF</th>
+                <th>การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {newsprints.map((item, index) => (
+                <tr key={item.id}>
+                  <td>{index + 1}</td>
+                  <td>{item.title}</td>
+                  <td>{item.date}</td>
+                  <td style={{ width: "100px", height: "100px" }}>
+                    <a
+                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${item.pdf_url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src="/public/assets/img/pdf.png" // เปลี่ยนเป็น URL ของรูปภาพไอคอนดาวน์โหลด
+                        alt="ดาวน์โหลด"
+                        style={{ width: "100px", height: "100px" }} // กำหนดขนาดรูปภาพ
+                      />
+                    </a>
+                  </td>
+                  <td>
+                    <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(item.id)}>
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>
+                      <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
 }
 
-export default AdminnewsprintTable;
+export default Adminnewsprint;

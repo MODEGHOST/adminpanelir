@@ -24,7 +24,7 @@ function HolderStucManager() {
   const fetchHolderStucs = () => {
     setLoading(true);
     axios
-      .get("http://localhost:8000/api/holders")
+      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/holders")
       .then((response) => {
         setHolderStucs(response.data);
         setLoading(false);
@@ -53,7 +53,7 @@ function HolderStucManager() {
 
   const handleAdd = () => {
     axios
-      .post("http://localhost:8000/api/holders", formData)
+      .post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/holders", formData)
       .then(() => {
         fetchHolderStucs();
         setFormData({ id: null, holder_name: "", shares_count: "", share_percentage: "" });
@@ -73,7 +73,7 @@ function HolderStucManager() {
 
   const handleUpdate = () => {
     axios
-      .put(`http://localhost:8000/api/holders/${editId}`, formData)
+      .put(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/holders/${editId}`, formData)
       .then(() => {
         fetchHolderStucs();
         setFormData({ id: null, holder_name: "", shares_count: "", share_percentage: "" });
@@ -87,7 +87,7 @@ function HolderStucManager() {
 
   const handleDelete = (id) => {
     axios
-      .delete(`http://localhost:8000/api/holders/${id}`)
+      .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/holders/${id}`)
       .then(() => {
         fetchHolderStucs();
       })

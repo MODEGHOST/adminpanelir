@@ -22,51 +22,85 @@ export default function Sidebar() {
               role="menu"
               data-accordion="false"
             >
-              <li className="nav-header">เมนูหลัก</li>
+              <li className="nav-header">Main Menu</li>
               <li className="nav-item">
                 <Link to="/" className="nav-link">
-                  <i className="nav-icon fas fa-home"></i>
-                  <p>หน้าแรก</p>
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Home</p>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to="/adminstockpice" className="nav-link">
-                  <p>ราคาตลาดหลักทรัพย์ย้อนหลัง</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/Admingovernan" className="nav-link">
-                  <p>คู่มือการกำกับดูแลกิจการฯ & ข้อบังคับของบริษัท</p>
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Stock Prices</p>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to="/Adminnews" className="nav-link">
-                  <p>ข่าวข้อมูลตลาดหลักทรัพย์</p>
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Market News</p>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to="/Adminnewsprint" className="nav-link">
-                  <p>ข่าวจากสื่อสิ่งพิมพื</p>
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Media News</p>
+                </Link>
+              </li>
+              <li className="nav-header">Document Menu</li>
+              <li className="nav-item">
+                <Link to="/Admingovernan" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Guides & Rules</p>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to="/Admindocread" className="nav-link">
-                  <p>เอกสารOne-report</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/Adminholder" className="nav-link">
-                  <p>โครงสร้างผู้ถือหุ้น</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/Adminevent" className="nav-link">
-                  <p>ปฎิทินกิจกรรม</p>
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>One Report</p>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to="/Adminfinanstates" className="nav-link">
-                  <p>งบการเงิน</p>
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Financials</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminanalysis" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Analysis</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminreportmuser" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Meeting Reports</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminmeetinguser" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Shareholder Meetings</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Admindetailgeneration" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Management Details</p>
+                </Link>
+              </li>
+              <li className="nav-header">General Menu</li>
+              <li className="nav-item">
+                <Link to="/Adminevent" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Events</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminholder" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Shareholders</p>
                 </Link>
               </li>
             </ul>

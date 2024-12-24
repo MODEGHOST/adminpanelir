@@ -9,7 +9,8 @@ function Adminfinanstates() {
     title: "",
     description: "",
     year: "",
-    file: null,
+    quater: "",
+    pdf_url: null,
   });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ function Adminfinanstates() {
 
   const fetchStates = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/finan-states");
+      const response = await axios.get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states");
       setStates(response.data);
       setLoading(false);
     } catch (error) {
@@ -35,13 +36,14 @@ function Adminfinanstates() {
     data.append("title", formData.title);
     data.append("description", formData.description);
     data.append("year", formData.year);
-    if (formData.file) data.append("file", formData.file);
+    data.append("quater", formData.quater);
+    if (formData.pdf_url) data.append("pdf_url", formData.pdf_url);
 
     try {
       if (editId) {
-        await axios.post(`http://localhost:8000/api/finan-states/${editId}`, data);
+        await axios.post(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states/${editId}`, data);
       } else {
-        await axios.post("http://localhost:8000/api/finan-states", data);
+        await axios.post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states", data);
       }
       resetForm();
       fetchStates();
@@ -53,7 +55,7 @@ function Adminfinanstates() {
   const handleDelete = async (id) => {
     if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
       try {
-        await axios.delete(`http://localhost:8000/api/finan-states/${id}`);
+        await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states/${id}`);
         fetchStates();
       } catch (error) {
         console.error("Error deleting state:", error);
@@ -66,14 +68,15 @@ function Adminfinanstates() {
       title: state.title,
       description: state.description,
       year: state.year,
-      file: null,
+      quater: state.quater,
+      pdf_url: null,
     });
     setEditId(state.id);
     setShowForm(true);
   };
 
   const resetForm = () => {
-    setFormData({ title: "", description: "", year: "", file: null });
+    setFormData({ title: "", description: "", year: "", quater: "", pdf_url: null });
     setEditId(null);
     setShowForm(false);
   };
@@ -94,7 +97,7 @@ function Adminfinanstates() {
       {showForm && (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="row mb-3">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <input
                 type="text"
                 className="form-control"
@@ -106,7 +109,7 @@ function Adminfinanstates() {
                 required
               />
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <input
                 type="text"
                 className="form-control"
@@ -130,12 +133,24 @@ function Adminfinanstates() {
                 required
               />
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="ไตรมาส (Q1, Q2, Q3, Q4)"
+                value={formData.quater}
+                onChange={(e) =>
+                  setFormData({ ...formData, quater: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="col-md-2">
               <input
                 type="file"
                 className="form-control"
                 onChange={(e) =>
-                  setFormData({ ...formData, file: e.target.files[0] })
+                  setFormData({ ...formData, pdf_url: e.target.files[0] })
                 }
               />
             </div>
@@ -160,8 +175,8 @@ function Adminfinanstates() {
             <th>ชื่อเรื่อง</th>
             <th>คำอธิบาย</th>
             <th>ปี พ.ศ.</th>
-            <th>รูปภาพ</th>
-            <th>QR Code</th>
+            <th>ไตรมาส</th>
+            <th>PDF</th>
             <th>การจัดการ</th>
           </tr>
         </thead>
@@ -172,20 +187,20 @@ function Adminfinanstates() {
               <td>{state.title}</td>
               <td>{state.description}</td>
               <td>{state.year}</td>
-              <td>
-                <img
-                  src={state.image_path}
-                  alt="รูปภาพ"
-                  style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                />
-              </td>
-              <td>
-                <img
-                  src={state.qr_code_path}
-                  alt="QR Code"
-                  style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                />
-              </td>
+              <td>{state.quater}</td>
+              <td style={{ width: "100px", height: "100px" }}>
+                    <a
+                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src="/public/assets/img/pdf.png" // เปลี่ยนเป็น URL ของรูปภาพไอคอนดาวน์โหลด
+                        alt="ดาวน์โหลด"
+                        style={{ width: "100px", height: "100px" }} // กำหนดขนาดรูปภาพ
+                      />
+                    </a>
+                  </td>
               <td>
                 <button
                   className="btn btn-warning btn-sm me-2"
