@@ -20,7 +20,7 @@ function Admindocone() {
 
   const fetchDocReads = async () => {
     try {
-      const response = await axios.get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read");
+      const response = await axios.get(`${import.meta.env.VITE_API_KEY}/api/doc_read`);
       setDocReads(response.data);
       setLoading(false);
     } catch (error) {
@@ -203,12 +203,12 @@ function Admindocone() {
       <table className="table table-bordered">
         <thead>
           <tr>
-            <th>#</th>
-            <th>ชื่อเอกสาร</th>
-            <th>ไฟล์เอกสาร</th>
-            <th>QR Code เอกสาร</th>
-            <th>วันที่</th>
-            {isAdmin && <th>การจัดการ</th>}
+            <th style={{ width: '30px' }}>#</th>
+            <th style={{ width: '100px' }}>ชื่อเอกสาร</th>
+            <th style={{ width: '50px' }}>ไฟล์เอกสาร</th>
+            <th style={{ width: '50px' }}>QR Code เอกสาร</th>
+            <th style={{ width: '100px' }}>วันที่</th>
+            {isAdmin && <th style={{ width: '100px' }}>การจัดการ</th>}
           </tr>
         </thead>
         <tbody>
@@ -218,19 +218,23 @@ function Admindocone() {
               <td>{docRead.title}</td>
               <td>
                 <a
-                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public/storage/${docRead.file_path}`}
+                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/files/${docRead.file_path}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  ดาวน์โหลด
+                <img
+                        src="/public/assets/img/pdf.png"
+                        alt="ดาวน์โหลด"
+                        style={{ width: '70px', height: '70px' }}
+                      />
                 </a>
               </td>
               <td>
                 {docRead.qr_code_path ? (
                   <img
-                    src={`http://129.200.6.52/laravel_auth_jwt_api_omd/public/storage/${docRead.qr_code_path}`}
+                    src={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/images/${docRead.qr_code_path}`}
                     alt="QR Code"
-                    style={{ width: "100px", height: "100px" }}
+                    style={{width: '70px', height: '70px' }}
                   />
                 ) : (
                   "ไม่มี QR Code"

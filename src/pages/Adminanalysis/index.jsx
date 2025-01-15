@@ -3,11 +3,13 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-regular-svg-icons";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
 
 function Adminanalysis() {
   const [data, setData] = useState([]);
   const [formData, setFormData] = useState({ title: "", date: "" });
   const [pdfFile, setPdfFile] = useState(null);
+  const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,8 +20,8 @@ function Adminanalysis() {
   }, []);
 
   const fetchData = () => {
-    axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/analysis")
+    axios 
+      .get(`${import.meta.env.VITE_API_KEY}/api/analysis`)
       .then((response) => {
         setData(response.data);
         setLoading(false);
@@ -33,6 +35,27 @@ function Adminanalysis() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ตรวจสอบประเภทไฟล์
+    if (pdfFile && pdfFile.type !== "application/pdf") {
+      Swal.fire({
+        icon: "error",
+        title: "ไฟล์ไม่ถูกต้อง",
+        text: "กรุณาเลือกไฟล์ PDF เท่านั้น",
+      });
+      return;
+    }
+
+    // ตรวจสอบขนาดไฟล์ (5 MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (pdfFile && pdfFile.size > maxSize) {
+      Swal.fire({
+        icon: "error",
+        title: "ไฟล์ใหญ่เกินไป",
+        text: "ขนาดไฟล์ต้องไม่เกิน 5 MB",
+      });
+      return;
+    }
 
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
@@ -48,6 +71,11 @@ function Adminanalysis() {
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: "success",
+          title: "สำเร็จ",
+          text: "แก้ไขข้อมูลสำเร็จ",
+        });
       } else {
         // เพิ่มข้อมูลใหม่
         response = await axios.post(
@@ -55,6 +83,11 @@ function Adminanalysis() {
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: "success",
+          title: "สำเร็จ",
+          text: "เพิ่มข้อมูลสำเร็จ",
+        });
       }
 
       console.log(response.data);
@@ -63,9 +96,18 @@ function Adminanalysis() {
     } catch (error) {
       if (error.response) {
         console.error("Error Response:", error.response.data.errors);
-        alert("เกิดข้อผิดพลาด: " + JSON.stringify(error.response.data.errors));
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: JSON.stringify(error.response.data.errors),
+        });
       } else {
         console.error("Error:", error.message);
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: error.message,
+        });
       }
     }
   };
@@ -80,19 +122,44 @@ function Adminanalysis() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
-      axios
-        .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/analysis/${id}`)
-        .then(() => fetchData())
-        .catch((error) => console.error("Error deleting analysis:", error));
-    }
+    Swal.fire({
+      title: "คุณแน่ใจหรือไม่?",
+      text: "คุณต้องการลบข้อมูลนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "ใช่, ลบเลย!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/analysis/${id}`);
+          fetchData();
+          Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
+        } catch (error) {
+          console.error("Error deleting analysis:", error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถลบข้อมูลได้",
+          });
+        }
+      }
+    });
   };
 
   const resetForm = () => {
     setFormData({ title: "", date: "" });
     setPdfFile(null);
+    setPdfFileName("");
     setEditId(null);
     setShowForm(false);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setPdfFile(file);
+    setPdfFileName(file ? file.name : "");
   };
 
   if (loading) return <div>กำลังโหลดข้อมูล...</div>;
@@ -100,7 +167,7 @@ function Adminanalysis() {
 
   return (
     <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-      <h1 className="text-center mb-4">จัดการบทวิเคราะห์หลักทรัพย์</h1>
+      <h1 className="text-center mb-4">จัดการเอกสารนำเสนอ</h1>
 
       <div className="d-flex justify-content-end mb-4">
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
@@ -135,20 +202,21 @@ function Adminanalysis() {
                 />
               </div>
               <div className="mb-3">
-            <label>ไฟล์ PDF</label>
-            <div className="custom-file">
-              <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
-                <i className="fa fa-upload"></i> อัปโหลดไฟล์
-              </label>
-              <input
-                type="file"
-                id="pdf_file"
-                className="custom-file-input"
-              onChange={(e) => setPdfFile(e.target.files[0])}
-                style={{ display: 'none' }}
-              />
-            </div>
-          </div>
+                <label>ไฟล์ PDF</label>
+                <div className="custom-file">
+                  <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
+                    <i className="fa fa-upload"></i> อัปโหลดไฟล์
+                  </label>
+                  <input
+                    type="file"
+                    id="pdf_file"
+                    className="custom-file-input"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+                {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
+              </div>
               <button type="submit" className="btn btn-success">
                 {editId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
               </button>
@@ -186,7 +254,7 @@ function Adminanalysis() {
                   <td>{item.date}</td>
                   <td>
                     <a
-                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${item.pdf_url}`}
+                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

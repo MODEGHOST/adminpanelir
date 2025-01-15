@@ -3,31 +3,31 @@ import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 
-
-function AdminIndex() {
-  const [manuals, setManuals] = useState([]);
+function Adminmanualgovernan() {
+  const [manualgovernan, setManualgovernan] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: "" });
-  const [frontImage, setFrontImage] = useState(null); // สำหรับอัปโหลดรูปภาพ
-  const [downloadFile, setDownloadFile] = useState(null); // สำหรับอัปโหลดไฟล์ดาวน์โหลด
+  const [formData, setFormData] = useState({ title: "", date: "" });
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    fetchManuals();
+    fetchManualgovernan();
   }, []);
 
-  const fetchManuals = () => {
+  const fetchManualgovernan = () => {
     axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals")
+      .get(`http://localhost:8000/api/manuals`)
       .then((response) => {
-        setManuals(response.data.data);
+        setManualgovernan(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching manuals:", error);
+        console.error("Error fetching news:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");
         setLoading(false);
       });
@@ -35,69 +35,117 @@ function AdminIndex() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    if (pdfFile && pdfFile.type !== "application/pdf") {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ไม่ถูกต้อง',
+        text: 'กรุณาเลือกไฟล์ PDF เท่านั้น'
+      });
+      return;
+    }
+
+    if (pdfFile && pdfFile.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ใหญ่เกินไป',
+        text: 'ขนาดไฟล์ต้องไม่เกิน 5 MB'
+      });
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
-    if (frontImage) formDataToSend.append("front_image", frontImage);
-    if (downloadFile) formDataToSend.append("download_file", downloadFile);
-  
+    formDataToSend.append("date", formData.date);
+    if (pdfFile) formDataToSend.append("pdf_file", pdfFile);
+
     try {
       let response;
       if (editId) {
-        // อัปเดตข้อมูลที่มีอยู่
         response = await axios.post(
-          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals/${editId}`, // ส่ง ID ที่ต้องการแก้ไข
+          `http://localhost:8000/api/manuals/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: 'แก้ไขข้อมูลสำเร็จ'
+        });
       } else {
-        // เพิ่มข้อมูลใหม่
         response = await axios.post(
-          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals",
+          "http://localhost:8000/api/manuals",
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: 'เพิ่มข้อมูลสำเร็จ'
+        });
       }
-  
-      console.log(response.data);
-      fetchManuals(); // โหลดข้อมูลใหม่
-      resetForm(); // รีเซ็ตฟอร์ม
+
+      fetchManualgovernan();
+      resetForm();
     } catch (error) {
       if (error.response) {
-        console.error("Error Response:", error.response.data.errors);
-        alert("เกิดข้อผิดพลาด: " + JSON.stringify(error.response.data.errors));
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: JSON.stringify(error.response.data.errors)
+        });
       } else {
-        console.error("Error:", error.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: error.message
+        });
       }
     }
   };
-  
-  
 
   const handleEdit = (id) => {
-    const manualToEdit = manuals.find((manual) => manual.id === id);
-    if (manualToEdit) {
-      setFormData({ title: manualToEdit.title });
-      setEditId(id); // กำหนดค่า ID เพื่ออัปเดต
-      setShowForm(true); // แสดงฟอร์ม
+    const manualgovernanToEdit = manualgovernan.find((item) => item.id === id);
+    if (manualgovernanToEdit) {
+      setFormData({ title: manualgovernanToEdit.title, date: manualgovernanToEdit.date });
+      setPdfFileName(manualgovernanToEdit.pdf_url || "");
+      setEditId(id);
+      setShowForm(true);
     }
   };
-  
-  
 
   const handleDelete = (id) => {
-    if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
-      axios
-        .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/manuals/${id}`)
-        .then(() => fetchManuals())
-        .catch((error) => console.error("Error deleting manual:", error));
-    }
+    Swal.fire({
+      title: 'คุณแน่ใจหรือไม่?',
+      text: "คุณต้องการลบข้อมูลนี้หรือไม่?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ใช่, ลบเลย!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:8000/api/manuals/${id}`)
+          .then(() => {
+            fetchManualgovernan();
+            Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
+          })
+          .catch((error) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: 'ไม่สามารถลบข้อมูลได้'
+            });
+          });
+      }
+    });
   };
 
   const resetForm = () => {
-    setFormData({ title: "" });
-    setFrontImage(null);
-    setDownloadFile(null);
+    setFormData({ title: "", date: "" });
+    setPdfFile(null);
+    setPdfFileName("");
     setEditId(null);
     setShowForm(false);
   };
@@ -107,14 +155,11 @@ function AdminIndex() {
 
   return (
     <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-      <h1 className="text-center mb-4">จัดการคู่มือการกำกับดูแลกิจการ</h1>
+      <h1 className="text-center mb-4">จัดการคู่มือการกำกับดูแลกิจการฯ & ข้อบังคับของบริษัท</h1>
 
       <div className="d-flex justify-content-end mb-4">
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "ปิดฟอร์ม" : "เพิ่มข้อมูล"}
+        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+          {showForm ? "ปิดฟอร์ม" : "เพิ่มข่าว"}
         </button>
       </div>
 
@@ -123,44 +168,49 @@ function AdminIndex() {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="title" className="form-label">
-                  ชื่อคู่มือ
-                </label>
+                <label htmlFor="title" className="form-label">หัวข้อข่าว</label>
                 <input
                   type="text"
                   id="title"
                   className="form-control"
                   value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="front_image" className="form-label">
-                  รูปภาพหน้า
-                </label>
+                <label htmlFor="date" className="form-label">วันที่</label>
                 <input
-                  type="file"
-                  id="front_image"
+                  type="date"
+                  id="date"
                   className="form-control"
-                  onChange={(e) => setFrontImage(e.target.files[0])}
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  required
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="download_file" className="form-label">
-                  ไฟล์สำหรับดาวน์โหลด
-                </label>
-                <input
-                  type="file"
-                  id="download_file"
-                  className="form-control"
-                  onChange={(e) => setDownloadFile(e.target.files[0])}
-                />
+                <label>ไฟล์ PDF</label>
+                <div className="custom-file">
+                  <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
+                    <i className="fa fa-upload"></i> อัปโหลดไฟล์
+                  </label>
+                  <input
+                    type="file"
+                    id="pdf_file"
+                    className="custom-file-input"
+                    accept="application/pdf"
+                    onChange={(e) => {
+                      setPdfFile(e.target.files[0]);
+                      setPdfFileName(e.target.files[0]?.name || "");
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+                {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
               </div>
               <button type="submit" className="btn btn-success">
-                {editId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
+                {editId ? "บันทึกการแก้ไข" : "เพิ่มข่าว"}
               </button>
               {editId && (
                 <button
@@ -182,50 +232,38 @@ function AdminIndex() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>ชื่อคู่มือ</th>
-                <th>รูปภาพหน้า</th>
-                <th>ไฟล์ดาวน์โหลด</th>
+                <th>คู่มือ</th>
+                <th>วันที่</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF</th>
                 <th>การจัดการ</th>
               </tr>
             </thead>
             <tbody>
-              {manuals.map((manual, index) => (
-                <tr key={manual.id}>
+              {manualgovernan.map((item, index) => (
+                <tr key={item.id}>
                   <td>{index + 1}</td>
-                  <td>{manual.title}</td>
-                  <td style={{ width: "100px", height: "100px" }}>
-                    <img
-                      src={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${manual.front_image_url}`}
-                      alt={manual.title}
-                      style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                    />
-                  </td>
-                  <td style={{ width: "100px", height: "100px" }}>
+                  <td>{item.title}</td>
+                  <td>{item.date}</td>
+                  <td>
                     <a
-                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${manual.download_url}`}
+                      href={`http://localhost:8000/storage/app/public/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <img
-                        src="/public/assets/img/pdf.png" // เปลี่ยนเป็น URL ของรูปภาพไอคอนดาวน์โหลด
+                        src="/public/assets/img/pdf.png"
                         alt="ดาวน์โหลด"
-                        style={{ width: "100px", height: "100px" }} // กำหนดขนาดรูปภาพ
+                        style={{ width: '70px', height: '70px' }}
                       />
                     </a>
                   </td>
                   <td>
-                  <button
-                    className="btn btn-warning btn-sm me-2"
-                    onClick={() => handleEdit(manual.id)}
-                  >
-                    <FontAwesomeIcon icon={faEdit} className="me-1" />
-                  </button>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(manual.id)}
-                  >
-                    <FontAwesomeIcon icon={faTrashAlt} className="me-1" />
-                  </button>
+                    <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(item.id)}>
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>
+                      <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -237,4 +275,4 @@ function AdminIndex() {
   );
 }
 
-export default AdminIndex;
+export default Adminmanualgovernan;

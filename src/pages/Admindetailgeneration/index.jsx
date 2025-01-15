@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
 
 function Admindetailgeneration() {
   const [states, setStates] = useState([]);
@@ -15,6 +16,7 @@ function Admindetailgeneration() {
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [fileName, setFileName] = useState("");
 
   useEffect(() => {
     fetchStates();
@@ -22,46 +24,91 @@ function Admindetailgeneration() {
 
   const fetchStates = async () => {
     try {
-      const response = await axios.get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/api/detailgenerations`
+      );
       setStates(response.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching states:", error);
+      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้", "error");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ตรวจสอบประเภทและขนาดของไฟล์ PDF
+    if (formData.pdf_url && formData.pdf_url.type !== "application/pdf") {
+      Swal.fire({
+        icon: "error",
+        title: "ไฟล์ไม่ถูกต้อง",
+        text: "กรุณาเลือกไฟล์ PDF เท่านั้น",
+      });
+      return;
+    }
+
+    if (formData.pdf_url && formData.pdf_url.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: "error",
+        title: "ไฟล์ใหญ่เกินไป",
+        text: "ขนาดไฟล์ต้องไม่เกิน 5 MB",
+      });
+      return;
+    }
+
     const data = new FormData();
     data.append("title", formData.title);
     data.append("description", formData.description);
     data.append("year", formData.year);
     data.append("quater", formData.quater);
     if (formData.pdf_url) data.append("pdf_url", formData.pdf_url);
-  
+
     try {
       if (editId) {
-        await axios.post(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations/${editId}`, data);
+        await axios.post(
+          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations/${editId}`,
+          data
+        );
+        Swal.fire("สำเร็จ", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
       } else {
-        await axios.post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations", data);
+        await axios.post(
+          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations",
+          data
+        );
+        Swal.fire("สำเร็จ", "เพิ่มข้อมูลเรียบร้อยแล้ว", "success");
       }
       resetForm();
       fetchStates();
     } catch (error) {
       console.error("Error submitting data:", error);
+      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
     }
   };
 
-
   const handleDelete = async (id) => {
-    if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
-      try {
-        await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations/${id}`);
-        fetchStates();
-      } catch (error) {
-        console.error("Error deleting state:", error);
+    Swal.fire({
+      title: "คุณแน่ใจหรือไม่?",
+      text: "คุณต้องการลบข้อมูลนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "ใช่, ลบเลย!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(
+            `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations/${id}`
+          );
+          fetchStates();
+          Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
+        } catch (error) {
+          console.error("Error deleting state:", error);
+          Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบข้อมูลได้", "error");
+        }
       }
-    }
+    });
   };
 
   const handleEdit = (state) => {
@@ -77,7 +124,14 @@ function Admindetailgeneration() {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", description: "", year: "", quater: "", pdf_url: null });
+    setFormData({
+      title: "",
+      description: "",
+      year: "",
+      quater: "",
+      pdf_url: null,
+    });
+    setFileName("");
     setEditId(null);
     setShowForm(false);
   };
@@ -85,7 +139,7 @@ function Admindetailgeneration() {
   if (loading) return <div>กำลังโหลด...</div>;
 
   return (
-    <div className="container py-5">
+    <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
       <h1 className="text-center mb-4">จัดการคำอธิบายและการวิเคราะห์ของฝ่ายจัดการ</h1>
 
       <button
@@ -147,13 +201,26 @@ function Admindetailgeneration() {
               />
             </div>
             <div className="col-md-2">
-              <input
-                type="file"
-                className="form-control"
-                onChange={(e) =>
-                  setFormData({ ...formData, pdf_url: e.target.files[0] })
-                }
-              />
+              <div className="custom-file">
+                <input
+                  type="file"
+                  id="pdf_url"
+                  className="custom-file-input"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setFormData({ ...formData, pdf_url: file });
+                    setFileName(file ? file.name : ""); // อัปเดตชื่อไฟล์
+                  }}
+                />
+                <label
+                  htmlFor="pdf_url"
+                  className="custom-file-label btn btn-primary"
+                >
+                  <i className="fa fa-upload"></i> อัปโหลดไฟล์
+                </label>
+              </div>
+              {fileName && <p className="mt-2">ไฟล์ที่เลือก: {fileName}</p>}
             </div>
           </div>
           <button type="submit" className="btn btn-success">
@@ -189,19 +256,19 @@ function Admindetailgeneration() {
               <td>{state.description}</td>
               <td>{state.year}</td>
               <td>{state.quater}</td>
-              <td style={{ width: "100px", height: "100px" }}>
-                    <a
-                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${state.pdf_url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img
-                        src="/public/assets/img/pdf.png" // เปลี่ยนเป็น URL ของรูปภาพไอคอนดาวน์โหลด
-                        alt="ดาวน์โหลด"
-                        style={{ width: "100px", height: "100px" }} // กำหนดขนาดรูปภาพ
-                      />
-                    </a>
-                  </td>
+              <td>
+                <a
+                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${state.pdf_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/public/assets/img/pdf.png"
+                    alt="ดาวน์โหลด"
+                    style={{ width: "100px", height: "100px" }}
+                  />
+                </a>
+              </td>
               <td>
                 <button
                   className="btn btn-warning btn-sm me-2"

@@ -3,6 +3,7 @@ import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 function Adminreportmuser() {
   const [reportmuser, setReportmuser] = useState([]);
@@ -10,6 +11,7 @@ function Adminreportmuser() {
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({ title: "" });
   const [pdfFile, setPdfFile] = useState(null);
+  const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -19,7 +21,7 @@ function Adminreportmuser() {
 
   const fetchReportmuser = () => {
     axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser")
+      .get(`${import.meta.env.VITE_API_KEY}/api/reportmtuser`)
       .then((response) => {
         setReportmuser(response.data);
         setLoading(false);
@@ -34,6 +36,15 @@ function Adminreportmuser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (pdfFile && pdfFile.type !== "application/pdf") {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ไม่ถูกต้อง',
+        text: 'กรุณาเลือกไฟล์ PDF เท่านั้น',
+      });
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     if (pdfFile) formDataToSend.append("pdf_file", pdfFile);
@@ -46,20 +57,32 @@ function Adminreportmuser() {
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: 'แก้ไขข้อมูลสำเร็จ',
+        });
       } else {
         response = await axios.post(
           "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser",
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: 'เพิ่มข้อมูลสำเร็จ',
+        });
       }
 
-      console.log(response.data);
       fetchReportmuser();
       resetForm();
     } catch (error) {
-      console.error("Error submitting data:", error);
-      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: error.response?.data?.message || 'ไม่สามารถบันทึกข้อมูลได้',
+      });
     }
   };
 
@@ -67,23 +90,44 @@ function Adminreportmuser() {
     const reportToEdit = reportmuser.find((item) => item.id === id);
     if (reportToEdit) {
       setFormData({ title: reportToEdit.title });
+      setPdfFileName(reportToEdit.pdf_file || "");
       setEditId(id);
       setShowForm(true);
     }
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
-      axios
-        .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser/${id}`)
-        .then(() => fetchReportmuser())
-        .catch((error) => console.error("Error deleting data:", error));
-    }
+    Swal.fire({
+      title: 'คุณแน่ใจหรือไม่?',
+      text: 'คุณต้องการลบข้อมูลนี้หรือไม่?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ใช่, ลบเลย!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser/${id}`)
+          .then(() => {
+            fetchReportmuser();
+            Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
+          })
+          .catch((error) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: 'ไม่สามารถลบข้อมูลได้',
+            });
+          });
+      }
+    });
   };
 
   const resetForm = () => {
     setFormData({ title: "" });
     setPdfFile(null);
+    setPdfFileName("");
     setEditId(null);
     setShowForm(false);
   };
@@ -123,10 +167,15 @@ function Adminreportmuser() {
                 type="file"
                 id="pdf_file"
                 className="custom-file-input"
-              onChange={(e) => setPdfFile(e.target.files[0])}
+                accept="application/pdf"
+                onChange={(e) => {
+                  setPdfFile(e.target.files[0]);
+                  setPdfFileName(e.target.files[0]?.name || "");
+                }}
                 style={{ display: 'none' }}
               />
             </div>
+            {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
           </div>
           <button type="submit" className="btn btn-success">
             {editId ? "บันทึกการแก้ไข" : "เพิ่มรายงาน"}
@@ -148,21 +197,21 @@ function Adminreportmuser() {
             <tr key={item.id}>
               <td>{index + 1}</td>
               <td>{item.title}</td>
-              <td style={{ width: "100px", height: "100px" }}>
-                    <a
-                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${item.pdf_file}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img
-                        src="/public/assets/img/pdf.png" // เปลี่ยนเป็น URL ของรูปภาพไอคอนดาวน์โหลด
-                        alt="ดาวน์โหลด"
-                        style={{ width: "100px", height: "100px" }} // กำหนดขนาดรูปภาพ
-                      />
-                    </a>
-                  </td>
               <td>
-                <button className="btn btn-warning btn-sm" onClick={() => handleEdit(item.id)}>
+                <a
+                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${item.pdf_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/public/assets/img/pdf.png"
+                    alt="ดาวน์โหลด"
+                    style={{ width: '100px', height: '100px' }}
+                  />
+                </a>
+              </td>
+              <td>
+                <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(item.id)}>
                   <FontAwesomeIcon icon={faEdit} />
                 </button>
                 <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>

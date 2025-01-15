@@ -3,10 +3,11 @@ import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import Swal from "sweetalert2";
 
 function Index() {
   const [stockPrices, setStockPrices] = useState([]);
-  const [filteredPrices, setFilteredPrices] = useState([]); // ข้อมูลที่กรองตามการค้นหา
+  const [filteredPrices, setFilteredPrices] = useState([]);
   const [formData, setFormData] = useState({
     date: "",
     open_price: "",
@@ -17,43 +18,41 @@ function Index() {
     changepercent: "",
     trading_value: "",
   });
-  const [editId, setEditId] = useState(null); // ID ของข้อมูลที่กำลังแก้ไข
-  const [searchDate, setSearchDate] = useState(""); // วันที่ค้นหา
-  const [showForm, setShowForm] = useState(false); // จัดการการแสดง/ซ่อนฟอร์ม
+  const [editId, setEditId] = useState(null);
+  const [searchDate, setSearchDate] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    // ดึงข้อมูลจาก API
     axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices")
+      .get(`${import.meta.env.VITE_API_KEY}/api/stock-prices`)
       .then((response) => {
         setStockPrices(response.data);
-        setFilteredPrices(response.data); // ตั้งค่าเริ่มต้นให้เหมือนข้อมูลทั้งหมด
+        setFilteredPrices(response.data);
       })
-      .catch((error) => console.error("Error fetching stock prices:", error));
+      .catch((error) => {
+        console.error("Error fetching stock prices:", error);
+        Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้", "error");
+      });
   }, []);
 
-  // ค้นหาข้อมูลตามวันที่
   const handleSearch = (e) => {
     const date = e.target.value;
     setSearchDate(date);
 
     const filtered = stockPrices.filter((price) =>
-      price.date.includes(date) // กรองตามวันที่ที่ค้นหา
+      price.date.includes(date)
     );
     setFilteredPrices(filtered);
   };
 
-  // จัดการการเปลี่ยนแปลงข้อมูลในฟอร์ม
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // เพิ่มหรือแก้ไขข้อมูล
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (editId) {
-      // แก้ไขข้อมูล
       axios
         .put(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${editId}`, formData)
         .then((response) => {
@@ -68,22 +67,28 @@ function Index() {
             )
           );
           resetForm();
+          Swal.fire("สำเร็จ", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
         })
-        .catch((error) => console.error("Error updating stock price:", error));
+        .catch((error) => {
+          console.error("Error updating stock price:", error);
+          Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
+        });
     } else {
-      // เพิ่มข้อมูลใหม่
       axios
         .post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices", formData)
         .then((response) => {
           setStockPrices([...stockPrices, response.data]);
           setFilteredPrices([...filteredPrices, response.data]);
           resetForm();
+          Swal.fire("สำเร็จ", "เพิ่มข้อมูลเรียบร้อยแล้ว", "success");
         })
-        .catch((error) => console.error("Error adding stock price:", error));
+        .catch((error) => {
+          console.error("Error adding stock price:", error);
+          Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเพิ่มข้อมูลได้", "error");
+        });
     }
   };
 
-  // รีเซ็ตฟอร์มหลังจากเพิ่มหรือแก้ไขข้อมูล
   const resetForm = () => {
     setFormData({
       date: "",
@@ -99,23 +104,37 @@ function Index() {
     setShowForm(false);
   };
 
-  // จัดการการแก้ไขข้อมูล
   const handleEdit = (id) => {
     const price = stockPrices.find((price) => price.id === id);
     setFormData(price);
     setEditId(id);
-    setShowForm(true); // แสดงฟอร์มเมื่อแก้ไข
+    setShowForm(true);
   };
 
-  // ลบข้อมูล
   const handleDelete = (id) => {
-    axios
-      .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${id}`)
-      .then(() => {
-        setStockPrices(stockPrices.filter((price) => price.id !== id));
-        setFilteredPrices(filteredPrices.filter((price) => price.id !== id));
-      })
-      .catch((error) => console.error("Error deleting stock price:", error));
+    Swal.fire({
+      title: "คุณแน่ใจหรือไม่?",
+      text: "คุณต้องการลบข้อมูลนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "ใช่, ลบเลย!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${id}`)
+          .then(() => {
+            setStockPrices(stockPrices.filter((price) => price.id !== id));
+            setFilteredPrices(filteredPrices.filter((price) => price.id !== id));
+            Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
+          })
+          .catch((error) => {
+            console.error("Error deleting stock price:", error);
+            Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบข้อมูลได้", "error");
+          });
+      }
+    });
   };
 
   return (
@@ -126,34 +145,27 @@ function Index() {
           style={{ marginRight: "10%", marginTop: "1%" }}
         >
           <h1 className="text-center mb-4">จัดการข้อมูลราคาหลักทรัพย์</h1>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div style={{ width: "15%" }}>
+              <label htmlFor="search-date" className="form-label">
+                ค้นหาวันที่:
+              </label>
+              <input
+                type="date"
+                id="search-date"
+                className="form-control"
+                value={searchDate}
+                onChange={handleSearch}
+              />
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? "ปิดฟอร์ม" : "เพิ่มข้อมูล"}
+            </button>
+          </div>
 
-          {/* ค้นหาวันที่และปุ่มเพิ่มข้อมูลในบรรทัดเดียวกัน */}
-<div className="d-flex justify-content-between align-items-center mb-4">
-  {/* ช่องค้นหาวันที่ */}
-  <div style={{ width: "15%" }}>
-    <label htmlFor="search-date" className="form-label">
-      ค้นหาวันที่:
-    </label>
-    <input
-      type="date"
-      id="search-date"
-      className="form-control"
-      value={searchDate}
-      onChange={handleSearch}
-    />
-  </div>
-
-  {/* ปุ่มเพิ่มข้อมูล */}
-  <button
-    className="btn btn-primary"
-    onClick={() => setShowForm(!showForm)}
-  >
-    {showForm ? "ปิดฟอร์ม" : "เพิ่มข้อมูล"}
-  </button>
-</div>
-
-
-          {/* ฟอร์มเพิ่ม/แก้ไขข้อมูล */}
           {showForm && (
             <div className="card mb-4">
               <div className="card-body">
@@ -243,33 +255,22 @@ function Index() {
                         className="form-control"
                         value={formData.change}
                         onChange={handleChange}
-                        
                       />
                     </div>
                     <div className="col-md-4">
-  <label htmlFor="changepercent" className="form-label">
-    % เปลี่ยนแปลง
-  </label>
-  <input
-    type="text"
-    id="changepercent"
-    name="changepercent"
-    className="form-control"
-    value={formData.changepercent}
-    onChange={(e) => {
-      const value = e.target.value;
-      // ตรวจสอบว่าเป็นเลขที่มี + หรือ - หรือเปล่า
-      if (/^[+-]?\d*$/.test(value)) {
-        handleChange(e);
-      }
-    }}
-    style={{
-      color: formData.changepercent < 0 ? 'red' : 'blue', // เปลี่ยนสีตามค่า
-    }}
-    required
-  />
-</div>
-
+                      <label htmlFor="changepercent" className="form-label">
+                        % เปลี่ยนแปลง
+                      </label>
+                      <input
+                        type="text"
+                        id="changepercent"
+                        name="changepercent"
+                        className="form-control"
+                        value={formData.changepercent}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
                     <div className="col-md-4">
                       <label htmlFor="trading_value" className="form-label">
                         มูลค่าการซื้อขาย
@@ -293,7 +294,6 @@ function Index() {
             </div>
           )}
 
-          {/* ตารางข้อมูล */}
           <div className="card">
             <div className="card-body">
               <h5 className="card-title">ข้อมูลราคาหลักทรัพย์</h5>

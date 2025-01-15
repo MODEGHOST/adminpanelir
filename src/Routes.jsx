@@ -22,6 +22,10 @@ import Adminreportmuser from "./pages/Adminreportmuser/index";
 import Adminmeetinguser from "./pages/Adminmeetinguser/index";
 import Admindetailgeneration from "./pages/Admindetailgeneration/index";
 import AdminControuser from "./pages/AdminControuser/index";
+import Adminthreeyear from "./pages/Adminthreeyear";
+import Adminquarter from "./pages/Adminquarter";
+import Adminpolicypayment from "./pages/Adminpolicypayment";
+import Adminpropose from "./pages/Adminpropose";
 
 
 
@@ -54,6 +58,10 @@ const RoutesPage = () => {
           <Route path="/Adminmeetinguser" element={<Adminmeetinguser />} />
           <Route path="/Admindetailgeneration" element={<Admindetailgeneration />} />
           <Route path="/AdminControuser" element={<AdminControuser />} />
+          <Route path="/Adminthreeyear" element={<Adminthreeyear />} />
+          <Route path="/Adminquarter" element={<Adminquarter />} />
+          <Route path="/Adminpolicypayment" element={<Adminpolicypayment />} />
+          <Route path="/Adminpropose" element={<Adminpropose />} />
 
           
         </Route>

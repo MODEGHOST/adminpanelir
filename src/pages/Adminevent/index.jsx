@@ -25,7 +25,7 @@ function AdminEvent() {
   // ฟังก์ชันดึงข้อมูลกิจกรรม
   const fetchEvents = () => {
     axios
-      .get("http://localhost:8000/api/events")
+      .get(`${import.meta.env.VITE_API_KEY}/api/events`)
       .then((response) => {
         setEvents(response.data.data);
       })

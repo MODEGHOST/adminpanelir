@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink as Link } from "react-router-dom";
+import Logo from "../../public/assets/dist/img/AdminLTELogo.png";
 
 export default function Sidebar() {
   return (
@@ -7,7 +8,7 @@ export default function Sidebar() {
       <aside className="main-sidebar nav-pills sidebar-dark-primary sidebar-no-expand elevation-1">
         <Link to="/" className="brand-link">
           <img
-            src="/assets/dist/img/AdminLTELogo.png"
+            src={Logo}
             alt="AdminLTE Logo"
             className="brand-image img-circle elevation-1"
             style={{ opacity: ".8" }}
@@ -69,7 +70,7 @@ export default function Sidebar() {
               <li className="nav-item">
                 <Link to="/Adminanalysis" className="nav-link">
                   <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
-                  <p>Analysis</p>
+                  <p>Presentation </p>
                 </Link>
               </li>
               <li className="nav-item">
@@ -90,6 +91,18 @@ export default function Sidebar() {
                   <p>Management Details</p>
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/Adminpolicypayment" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Policypayment</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminpropose" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Proposeagenda</p>
+                </Link>
+              </li>
               <li className="nav-header">General Menu</li>
               <li className="nav-item">
                 <Link to="/Adminevent" className="nav-link">
@@ -103,6 +116,19 @@ export default function Sidebar() {
                   <p>Shareholders</p>
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/Adminthreeyear" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Threeyear</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminquarter" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Quarter</p>
+                </Link>
+              </li>
+              
             </ul>
           </nav>
         </div>

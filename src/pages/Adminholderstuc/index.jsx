@@ -24,7 +24,7 @@ function HolderStucManager() {
   const fetchHolderStucs = () => {
     setLoading(true);
     axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/holders")
+      .get(`${import.meta.env.VITE_API_KEY}/api/holders`)
       .then((response) => {
         setHolderStucs(response.data);
         setLoading(false);

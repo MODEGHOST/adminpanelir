@@ -63,12 +63,12 @@ export default function Signin() {
       <div className="login-box">
         <div className="login-logo">
           <a href="#">
-            <b>WEB</b> THAIRUNG IR (นักลงทุนสัมพันธ์)
+            <b>WEB</b> THAIRUNG IR
           </a>
         </div>
         <div id="auth_bg" className="card">
           <div className="card-body login-card-body">
-            <p className="login-box-msg">Sign in to start your session</p>
+            <p className="login-box-msg">ADMIN SIGNIN</p>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="input-group mb-3">
                 <input
@@ -103,7 +103,7 @@ export default function Signin() {
                 <p className="text-danger">This password field is required</p>
               )}
               <div className="row">
-                <div className="col-4 offset-8">
+                <div className="col-4 offset-4">
                   <button type="submit" className="btn btn-primary btn-block">
                     Sign In
                   </button>

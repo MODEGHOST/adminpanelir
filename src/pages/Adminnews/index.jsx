@@ -3,13 +3,15 @@ import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 
 function Adminnews() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({ title: "", date: "" });
-  const [pdfFile, setPdfFile] = useState(null); // สำหรับอัปโหลดไฟล์ PDF
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -19,7 +21,7 @@ function Adminnews() {
 
   const fetchNews = () => {
     axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/news")
+      .get(`${import.meta.env.VITE_API_KEY}/api/news`)
       .then((response) => {
         setNews(response.data);
         setLoading(false);
@@ -34,6 +36,24 @@ function Adminnews() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (pdfFile && pdfFile.type !== "application/pdf") {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ไม่ถูกต้อง',
+        text: 'กรุณาเลือกไฟล์ PDF เท่านั้น'
+      });
+      return;
+    }
+
+    if (pdfFile && pdfFile.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ใหญ่เกินไป',
+        text: 'ขนาดไฟล์ต้องไม่เกิน 5 MB'
+      });
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     formDataToSend.append("date", formData.date);
@@ -42,30 +62,44 @@ function Adminnews() {
     try {
       let response;
       if (editId) {
-        // อัปเดตข้อมูล
         response = await axios.post(
           `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/news/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: 'แก้ไขข้อมูลสำเร็จ'
+        });
       } else {
-        // เพิ่มข้อมูลใหม่
         response = await axios.post(
           "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/news",
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: 'เพิ่มข้อมูลสำเร็จ'
+        });
       }
 
-      console.log(response.data);
       fetchNews();
       resetForm();
     } catch (error) {
       if (error.response) {
-        console.error("Error Response:", error.response.data.errors);
-        alert("เกิดข้อผิดพลาด: " + JSON.stringify(error.response.data.errors));
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: JSON.stringify(error.response.data.errors)
+        });
       } else {
-        console.error("Error:", error.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: error.message
+        });
       }
     }
   };
@@ -74,23 +108,44 @@ function Adminnews() {
     const newsToEdit = news.find((item) => item.id === id);
     if (newsToEdit) {
       setFormData({ title: newsToEdit.title, date: newsToEdit.date });
+      setPdfFileName(newsToEdit.pdf_url || "");
       setEditId(id);
       setShowForm(true);
     }
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
-      axios
-        .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/news/${id}`)
-        .then(() => fetchNews())
-        .catch((error) => console.error("Error deleting news:", error));
-    }
+    Swal.fire({
+      title: 'คุณแน่ใจหรือไม่?',
+      text: "คุณต้องการลบข้อมูลนี้หรือไม่?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ใช่, ลบเลย!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/news/${id}`)
+          .then(() => {
+            fetchNews();
+            Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
+          })
+          .catch((error) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: 'ไม่สามารถลบข้อมูลได้'
+            });
+          });
+      }
+    });
   };
 
   const resetForm = () => {
     setFormData({ title: "", date: "" });
     setPdfFile(null);
+    setPdfFileName("");
     setEditId(null);
     setShowForm(false);
   };
@@ -100,7 +155,7 @@ function Adminnews() {
 
   return (
     <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-      <h1 className="text-center mb-4">จัดการข่าวสาร</h1>
+      <h1 className="text-center mb-4">จัดการข่าวแจ้งตลาดหลักทรัพย์</h1>
 
       <div className="d-flex justify-content-end mb-4">
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
@@ -135,13 +190,24 @@ function Adminnews() {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="pdf_file" className="form-label">ไฟล์ PDF</label>
-                <input
-                  type="file"
-                  id="pdf_file"
-                  className="form-control"
-                  onChange={(e) => setPdfFile(e.target.files[0])}
-                />
+                <label>ไฟล์ PDF</label>
+                <div className="custom-file">
+                  <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
+                    <i className="fa fa-upload"></i> อัปโหลดไฟล์
+                  </label>
+                  <input
+                    type="file"
+                    id="pdf_file"
+                    className="custom-file-input"
+                    accept="application/pdf"
+                    onChange={(e) => {
+                      setPdfFile(e.target.files[0]);
+                      setPdfFileName(e.target.files[0]?.name || "");
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+                {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
               </div>
               <button type="submit" className="btn btn-success">
                 {editId ? "บันทึกการแก้ไข" : "เพิ่มข่าว"}
@@ -168,7 +234,7 @@ function Adminnews() {
                 <th>#</th>
                 <th>หัวข้อข่าว</th>
                 <th>วันที่</th>
-                <th>ไฟล์ PDF</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF</th>
                 <th>การจัดการ</th>
               </tr>
             </thead>
@@ -178,16 +244,16 @@ function Adminnews() {
                   <td>{index + 1}</td>
                   <td>{item.title}</td>
                   <td>{item.date}</td>
-                  <td style={{ width: "100px", height: "100px" }}>
+                  <td>
                     <a
-                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/public${item.pdf_url}`}
+                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <img
-                        src="/public/assets/img/pdf.png" // เปลี่ยนเป็น URL ของรูปภาพไอคอนดาวน์โหลด
+                        src="/public/assets/img/pdf.png"
                         alt="ดาวน์โหลด"
-                        style={{ width: "100px", height: "100px" }} // กำหนดขนาดรูปภาพ
+                        style={{ width: '70px', height: '70px' }}
                       />
                     </a>
                   </td>
