@@ -69,14 +69,14 @@ function Adminfinanstates() {
 
     try {
       if (editId) {
-        await axios.post(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states/${editId}`, data);
+        await axios.post(`${import.meta.env.VITE_API_KEY}/api/finan-states/${editId}`, data);
         Swal.fire({
           icon: "success",
           title: "สำเร็จ",
           text: "แก้ไขข้อมูลสำเร็จ",
         });
       } else {
-        await axios.post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states", data);
+        await axios.post(`${import.meta.env.VITE_API_KEY}/api/finan-states`, data);
         Swal.fire({
           icon: "success",
           title: "สำเร็จ",
@@ -107,7 +107,7 @@ function Adminfinanstates() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/finan-states/${id}`);
+          await axios.delete(`${import.meta.env.VITE_API_KEY}/api/finan-states/${id}`);
           fetchStates();
           Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
         } catch (error) {
@@ -250,7 +250,7 @@ function Adminfinanstates() {
               <td>{state.quater}</td>
               <td style={{ width: "100px", height: "100px" }}>
                 <a
-                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${state.pdf_url}`}
+                  href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${state.pdf_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

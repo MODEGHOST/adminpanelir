@@ -24,6 +24,7 @@ function Index() {
 
   useEffect(() => {
     axios
+      // .get(`${import.meta.env.VITE_API_KEY}/api/stock-prices`)
       .get(`${import.meta.env.VITE_API_KEY}/api/stock-prices`)
       .then((response) => {
         setStockPrices(response.data);
@@ -51,11 +52,17 @@ function Index() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+  
+    console.log("📤 ส่งข้อมูลไปยัง API:", formData); // ✅ ตรวจสอบข้อมูลที่ถูกส่งไป
+  
     if (editId) {
+      console.log(`🛠 กำลังอัปเดตข้อมูลที่ ID: ${editId}`);
+  
       axios
-        .put(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${editId}`, formData)
+        .put(`${import.meta.env.VITE_API_KEY}/api/stock-prices/${editId}`, formData)
         .then((response) => {
+          console.log("✅ API ตอบกลับ:", response.data); // ✅ ตรวจสอบ Response ที่ได้รับกลับมา
+  
           setStockPrices(
             stockPrices.map((price) =>
               price.id === editId ? response.data : price
@@ -70,25 +77,31 @@ function Index() {
           Swal.fire("สำเร็จ", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
         })
         .catch((error) => {
-          console.error("Error updating stock price:", error);
+          console.error("❌ Error updating stock price:", error);
+          console.error("🔍 ข้อผิดพลาดจาก API:", error.response?.data || error);
           Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
         });
     } else {
+      console.log("➕ กำลังเพิ่มข้อมูลใหม่...");
+  
       axios
-        .post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices", formData)
+        .post(`${import.meta.env.VITE_API_KEY}/api/stock-prices`, formData)
         .then((response) => {
+          console.log("✅ API ตอบกลับ:", response.data); // ✅ ตรวจสอบ Response ที่ได้รับกลับมา
+  
           setStockPrices([...stockPrices, response.data]);
           setFilteredPrices([...filteredPrices, response.data]);
           resetForm();
           Swal.fire("สำเร็จ", "เพิ่มข้อมูลเรียบร้อยแล้ว", "success");
         })
         .catch((error) => {
-          console.error("Error adding stock price:", error);
+          console.error("❌ Error adding stock price:", error);
+          console.error("🔍 ข้อผิดพลาดจาก API:", error.response?.data || error);
           Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเพิ่มข้อมูลได้", "error");
         });
     }
   };
-
+  
   const resetForm = () => {
     setFormData({
       date: "",
@@ -99,6 +112,7 @@ function Index() {
       change: "",
       changepercent: "",
       trading_value: "",
+      trading_amount: "",
     });
     setEditId(null);
     setShowForm(false);
@@ -123,7 +137,7 @@ function Index() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/stock-prices/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/stock-prices/${id}`)
           .then(() => {
             setStockPrices(stockPrices.filter((price) => price.id !== id));
             setFilteredPrices(filteredPrices.filter((price) => price.id !== id));
@@ -232,7 +246,7 @@ function Index() {
                     </div>
                     <div className="col-md-4">
                       <label htmlFor="previous_close_price" className="form-label">
-                        ราคาเปิดย้อนหลัง
+                        ราคาปิด
                       </label>
                       <input
                         type="number"
@@ -273,7 +287,7 @@ function Index() {
                     </div>
                     <div className="col-md-4">
                       <label htmlFor="trading_value" className="form-label">
-                        มูลค่าการซื้อขาย
+                        ปริมาณซื้อขาย ( หุ้น )
                       </label>
                       <input
                         type="number"
@@ -281,6 +295,20 @@ function Index() {
                         name="trading_value"
                         className="form-control"
                         value={formData.trading_value}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label htmlFor="trade_amount" className="form-label">
+                        มูลค่าการซื้อขาย
+                      </label>
+                      <input
+                        type="number"
+                        id="trade_amount"
+                        name="trade_amount"
+                        className="form-control"
+                        value={formData.trade_amount}
                         onChange={handleChange}
                         required
                       />
@@ -305,9 +333,10 @@ function Index() {
                       <th>ราคาเปิด</th>
                       <th>ราคาสูงสุด</th>
                       <th>ราคาต่ำสุด</th>
-                      <th>ราคาเปิดย้อนหลัง</th>
+                      <th>ราคาปิด</th>
                       <th>การเปลี่ยนแปลง</th>
                       <th>% เปลี่ยนแปลง</th>
+                      <th>ปริมาณซื้อขาย</th>
                       <th>มูลค่าการซื้อขาย</th>
                       <th>การจัดการ</th>
                     </tr>
@@ -324,6 +353,7 @@ function Index() {
                           <td>{price.change}</td>
                           <td>{price.changepercent}</td>
                           <td>{price.trading_value}</td>
+                          <td>{price.trade_amount}</td>
                           <td>
                             <button
                               className="btn btn-warning btn-sm me-2"

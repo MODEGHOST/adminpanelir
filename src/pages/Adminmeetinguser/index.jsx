@@ -53,7 +53,7 @@ function Adminmeetinguser() {
       let response;
       if (editId) {
         response = await axios.post(
-          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/meetinguser/${editId}`,
+          `${import.meta.env.VITE_API_KEY}/api/meetinguser/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -64,7 +64,7 @@ function Adminmeetinguser() {
         });
       } else {
         response = await axios.post(
-          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/meetinguser",
+          `${import.meta.env.VITE_API_KEY}/api/meetinguser`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -108,7 +108,7 @@ function Adminmeetinguser() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/meetinguser/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/meetinguser/${id}`)
           .then(() => {
             fetchMeetinguser();
             Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
@@ -200,7 +200,7 @@ function Adminmeetinguser() {
               <td>{item.title}</td>
               <td>
                 <a
-                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${item.pdf_file}`}
+                  href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_file}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

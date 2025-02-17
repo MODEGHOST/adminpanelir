@@ -21,7 +21,7 @@ function Adminmanualgovernan() {
 
   const fetchManualgovernan = () => {
     axios
-      .get(`http://localhost:8000/api/manuals`)
+      .get(`${import.meta.env.VITE_API_KEY}/api/manuals`)
       .then((response) => {
         setManualgovernan(response.data);
         setLoading(false);
@@ -63,7 +63,7 @@ function Adminmanualgovernan() {
       let response;
       if (editId) {
         response = await axios.post(
-          `http://localhost:8000/api/manuals/${editId}`,
+          `${import.meta.env.VITE_API_KEY}/api/manuals/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -74,7 +74,7 @@ function Adminmanualgovernan() {
         });
       } else {
         response = await axios.post(
-          "http://localhost:8000/api/manuals",
+          `${import.meta.env.VITE_API_KEY}/api/manuals`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -126,7 +126,7 @@ function Adminmanualgovernan() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://localhost:8000/api/manuals/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/manuals/${id}`)
           .then(() => {
             fetchManualgovernan();
             Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
@@ -155,7 +155,7 @@ function Adminmanualgovernan() {
 
   return (
     <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-      <h1 className="text-center mb-4">จัดการคู่มือการกำกับดูแลกิจการฯ & ข้อบังคับของบริษัท</h1>
+      <h1 className="text-center mb-4">จัดการคู่มือการกำกับดูแลกิจการฯ</h1>
 
       <div className="d-flex justify-content-end mb-4">
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
@@ -246,7 +246,7 @@ function Adminmanualgovernan() {
                   <td>{item.date}</td>
                   <td>
                     <a
-                      href={`http://localhost:8000/storage/app/public/uploads/pdf_files/${item.pdf_url}`}
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

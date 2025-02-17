@@ -39,12 +39,12 @@ function Admindocone() {
     try {
       if (editId) {
         // หากเป็นการอัปเดต
-        await axios.post(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read/${editId}`, data, {
+        await axios.post( `${import.meta.env.VITE_API_KEY}/api/doc_read/${editId}`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
         // หากเป็นการเพิ่มข้อมูล
-        await axios.post("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read", data, {
+        await axios.post( `${import.meta.env.VITE_API_KEY}/api/doc_read`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -63,7 +63,7 @@ function Admindocone() {
   const handleDelete = async (id) => {
     if (window.confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
       try {
-        await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read/${id}`);
+        await axios.delete( `${import.meta.env.VITE_API_KEY}/api/doc_read/${id}`);
         fetchDocReads();
       } catch (error) {
         console.error("Error deleting doc_read:", error);
@@ -74,7 +74,7 @@ function Admindocone() {
   const handleEdit = async (id) => {
     try {
       // ส่งคำขอ GET เพื่อดึงข้อมูลเอกสารตาม ID
-      const response = await axios.get(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/doc_read/${id}`);
+      const response = await axios.get(`${import.meta.env.VITE_API_KEY}/api/doc_read/${id}`);
 
       const docRead = response.data;
       setFormData({
@@ -100,7 +100,7 @@ function Admindocone() {
 
   return (
     <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-      <h1 className="text-center mb-4">จัดการเอกสาร One-Port</h1>
+      <h1 className="text-center mb-4">จัดการแบบ 56-1 Report</h1>
 
       {/* ค้นหาข้อมูลตามวันที่ */}
       <div className="mb-3 d-flex justify-content-between">
@@ -168,6 +168,7 @@ function Admindocone() {
             <input
               type="file"
               id="file"
+              accept="application/pdf"
               className="form-control"
               onChange={(e) => setFile(e.target.files[0])}
             />
@@ -179,7 +180,7 @@ function Admindocone() {
             <div className="d-flex align-items-center">
               {formData.qrCode && (
                 <img
-                  src={`http://129.200.6.52/laravel_auth_jwt_api_omd/public/storage/${formData.qrCode}`}
+                  src={`${import.meta.env.VITE_QR_KEY}/uploads/images/${formData.qrCode}`}
                   alt="Generated QR Code"
                   style={{ width: "100px", height: "100px" }}
                 />
@@ -218,7 +219,7 @@ function Admindocone() {
               <td>{docRead.title}</td>
               <td>
                 <a
-                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/files/${docRead.file_path}`}
+                  href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${docRead.file_path}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -232,7 +233,7 @@ function Admindocone() {
               <td>
                 {docRead.qr_code_path ? (
                   <img
-                    src={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/images/${docRead.qr_code_path}`}
+                    src={`${import.meta.env.VITE_QR_KEY}/uploads/images/${docRead.qr_code_path}`}
                     alt="QR Code"
                     style={{width: '70px', height: '70px' }}
                   />

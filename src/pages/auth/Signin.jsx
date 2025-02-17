@@ -11,7 +11,7 @@ export default function Signin() {
   const signIn = useSignIn();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const API_URL = "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/admin/login"; // URL ของ API
+  const API_URL = `${import.meta.env.VITE_API_KEY}/api/admin/login`; // URL ของ API
 
   const onSubmit = async (data) => {
     try {

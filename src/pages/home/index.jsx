@@ -20,7 +20,7 @@ export default function Index() {
 
   useEffect(() => {
     axios
-      .get("http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/count-tables")
+      .get(`${import.meta.env.VITE_API_KEY}/api/count-tables`)
       .then((response) => {
         setCounts(response.data);
       })
@@ -71,8 +71,8 @@ export default function Index() {
     >
       <div className="small-box bg-primary">
         <div className="inner">
-          <h3>SET Search</h3>
-          <p>ค้นหาราคาตลาด</p>
+          <h3>SET TRADE</h3>
+          <p>ทางลัดเข้าหน้าตลาดหลักทรัพย์</p>
         </div>
         <div className="icon">
           <i className="fas fa-search"></i>

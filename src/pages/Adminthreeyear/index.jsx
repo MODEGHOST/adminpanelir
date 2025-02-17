@@ -6,6 +6,8 @@ import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
 
 function Adminthreeyear() {
+  const [comments, setComments] = useState({});
+const [editComment, setEditComment] = useState({ column: "", value: "" });
   const [threeYearsData, setThreeYearsData] = useState([]);
   const [formData, setFormData] = useState({
     year: "",
@@ -31,10 +33,11 @@ function Adminthreeyear() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/threeyear/all")
+      .get(`${import.meta.env.VITE_API_KEY}/api/threeyear/all`)
       .then((response) => {
         const sortedData = response.data.data.sort((a, b) => b.year - a.year);
         setThreeYearsData(sortedData);
+        setComments(response.data.comments); // เก็บ comments จาก API
       })
       .catch((error) => {
         console.error("Error fetching three years data:", error);
@@ -53,7 +56,7 @@ function Adminthreeyear() {
     console.log("Form data:", formData); // Debug log
     if (editId) {
       axios
-        .put(`http://localhost:8000/api/threeyear/${editId}`, formData)
+        .put(`${import.meta.env.VITE_API_KEY}/api/threeyear/${editId}`, formData)
         .then((response) => {
           console.log("Update response:", response.data); // Debug log
           setThreeYearsData(
@@ -135,7 +138,7 @@ function Adminthreeyear() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://localhost:8000/api/threeyear/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/threeyear/${id}`)
           .then(() => {
             setThreeYearsData(threeYearsData.filter((data) => data.id !== id));
             Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
@@ -148,6 +151,50 @@ function Adminthreeyear() {
     });
   };
 
+  const handleCommentChange = (column, value) => {
+    setEditComment({ column, value }); // ตั้งค่าคอลัมน์และค่าที่ต้องการแก้ไข
+  };
+  
+  const handleCommentSubmit = () => {
+    // ตรวจสอบข้อมูลก่อนส่ง
+    if (!editComment.column || !editComment.value) {
+      Swal.fire("เกิดข้อผิดพลาด", "กรุณากรอกข้อมูลให้ครบถ้วน", "error");
+      return;
+    }
+  
+    // ส่งข้อมูลไปยัง Backend
+    axios
+      .post(`${import.meta.env.VITE_API_KEY}/api/threeyear/comments/update`, {
+        comments: {
+          [editComment.column]: editComment.value, // ส่งข้อมูลในรูปแบบ { column: comment }
+        },
+      })
+      .then(() => {
+        // อัปเดต state ของ comments
+        setComments({ ...comments, [editComment.column]: editComment.value });
+        setEditComment({ column: "", value: "" }); // รีเซ็ตฟอร์ม
+        Swal.fire("สำเร็จ", "แก้ไข Comment เรียบร้อยแล้ว", "success");
+      })
+      .catch((error) => {
+        console.error("Error updating comment:", error);
+        const errorMessage =
+          error.response?.data?.message || "ไม่สามารถแก้ไข Comment ได้";
+        Swal.fire("เกิดข้อผิดพลาด", errorMessage, "error");
+      });
+  };
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const commentsPerPage = 7; // จำนวน Comment ต่อหน้า
+  const totalPages = Math.ceil(Object.entries(comments).length / commentsPerPage);
+  const currentComments = Object.entries(comments).slice(
+    (currentPage - 1) * commentsPerPage,
+    currentPage * commentsPerPage
+  );
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
   
 
 
@@ -486,7 +533,6 @@ function Adminthreeyear() {
   </div>
 )}
 
-
 <div className="card">
   <div className="card-body">
     <h5 className="card-title text-center">ข้อมูลเปรียบเทียบ 3 ปี</h5>
@@ -593,7 +639,78 @@ function Adminthreeyear() {
     </div>
   </div>
 </div>
-
+<div className="card">
+  <div className="card-body">
+    <h5 className="card-title">จัดการ Comment ของคอลัมน์</h5>
+    <div className="table-responsive">
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            <th style={{ width: "1%" }}>คอลัมน์</th>
+            <th style={{ width: "1%" }}>Comment</th>
+            <th style={{ width: "1%" }}>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentComments.map(([column, comment]) => (
+            <tr key={column}>
+              <td>{column}</td>
+              <td>
+                {editComment.column === column ? (
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editComment.value}
+                    onChange={(e) =>
+                      setEditComment({ column, value: e.target.value })
+                    }
+                  />
+                ) : (
+                  comment
+                )}
+              </td>
+              <td>
+                {editComment.column === column ? (
+                  <button
+                    className="btn btn-success"
+                    onClick={handleCommentSubmit}
+                  >
+                    บันทึก
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-warning"
+                    onClick={() =>
+                      setEditComment({ column, value: comments[column] })
+                    }
+                  >
+                    แก้ไข
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div className="pagination">
+      <button
+        className="btn btn-secondary me-2"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        ก่อนหน้า
+      </button>
+      <button
+        className="btn btn-secondary ms-2"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        ถัดไป
+      </button>
+    </div>
+  </div>
+</div>
     </div>
   );
 }

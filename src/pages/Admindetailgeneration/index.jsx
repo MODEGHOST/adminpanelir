@@ -67,13 +67,13 @@ function Admindetailgeneration() {
     try {
       if (editId) {
         await axios.post(
-          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations/${editId}`,
+           `${import.meta.env.VITE_API_KEY}/api/detailgenerations/${editId}`,
           data
         );
         Swal.fire("สำเร็จ", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
       } else {
         await axios.post(
-          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations",
+           `${import.meta.env.VITE_API_KEY}/api/detailgenerations`,
           data
         );
         Swal.fire("สำเร็จ", "เพิ่มข้อมูลเรียบร้อยแล้ว", "success");
@@ -99,7 +99,7 @@ function Admindetailgeneration() {
       if (result.isConfirmed) {
         try {
           await axios.delete(
-            `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/detailgenerations/${id}`
+             `${import.meta.env.VITE_API_KEY}/api/detailgenerations/${id}`
           );
           fetchStates();
           Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
@@ -258,7 +258,7 @@ function Admindetailgeneration() {
               <td>{state.quater}</td>
               <td>
                 <a
-                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${state.pdf_url}`}
+                  href={ `${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${state.pdf_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

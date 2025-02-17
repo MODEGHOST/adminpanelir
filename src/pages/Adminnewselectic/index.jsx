@@ -1,33 +1,33 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-regular-svg-icons';
-import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit } from "@fortawesome/free-regular-svg-icons";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
 
-function AdminProposeAgenda() {
-  const [proposeagenda, setProposeAgenda] = useState([]);
+function AdminNewselectic() {
+  const [data, setData] = useState([]); // เก็บข้อมูล newselectic
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: "", date: "" });
+  const [formData, setFormData] = useState({ title: "", date: "", posted_day: "" });
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    fetchProposeAgenda();
+    fetchData();
   }, []);
 
-  const fetchProposeAgenda = () => {
+  const fetchData = () => {
     axios
-      .get(`${import.meta.env.VITE_API_KEY}/api/proposeagenda`)
+      .get(`${import.meta.env.VITE_API_KEY}/api/newselectic`) // ดึงข้อมูลจาก newselectic
       .then((response) => {
-        setProposeAgenda(response.data);
+        setData(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching proposeagenda:", error);
+        console.error("Error fetching data:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");
         setLoading(false);
       });
@@ -38,18 +38,18 @@ function AdminProposeAgenda() {
 
     if (pdfFile && pdfFile.type !== "application/pdf") {
       Swal.fire({
-        icon: 'error',
-        title: 'ไฟล์ไม่ถูกต้อง',
-        text: 'กรุณาเลือกไฟล์ PDF เท่านั้น'
+        icon: "error",
+        title: "ไฟล์ไม่ถูกต้อง",
+        text: "กรุณาเลือกไฟล์ PDF เท่านั้น",
       });
       return;
     }
 
     if (pdfFile && pdfFile.size > 5 * 1024 * 1024) {
       Swal.fire({
-        icon: 'error',
-        title: 'ไฟล์ใหญ่เกินไป',
-        text: 'ขนาดไฟล์ต้องไม่เกิน 5 MB'
+        icon: "error",
+        title: "ไฟล์ใหญ่เกินไป",
+        text: "ขนาดไฟล์ต้องไม่เกิน 5 MB",
       });
       return;
     }
@@ -57,58 +57,63 @@ function AdminProposeAgenda() {
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     formDataToSend.append("date", formData.date);
+    formDataToSend.append("posted_day", formData.posted_day); // เพิ่ม posted_day
     if (pdfFile) formDataToSend.append("pdf_file", pdfFile);
 
     try {
       let response;
       if (editId) {
         response = await axios.post(
-          `${import.meta.env.VITE_API_KEY}/api/proposeagenda/${editId}`,
+          `${import.meta.env.VITE_API_KEY}/api/newselectic/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         Swal.fire({
-          icon: 'success',
-          title: 'สำเร็จ',
-          text: 'แก้ไขข้อมูลสำเร็จ'
+          icon: "success",
+          title: "สำเร็จ",
+          text: "แก้ไขข้อมูลสำเร็จ",
         });
       } else {
         response = await axios.post(
-          `${import.meta.env.VITE_API_KEY}/api/proposeagenda`,
+          `${import.meta.env.VITE_API_KEY}/api/newselectic`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         Swal.fire({
-          icon: 'success',
-          title: 'สำเร็จ',
-          text: 'เพิ่มข้อมูลสำเร็จ'
+          icon: "success",
+          title: "สำเร็จ",
+          text: "เพิ่มข้อมูลสำเร็จ",
         });
       }
 
-      fetchProposeAgenda();
+      fetchData();
       resetForm();
     } catch (error) {
       if (error.response) {
         Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: JSON.stringify(error.response.data.errors)
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: JSON.stringify(error.response.data.errors),
         });
       } else {
         Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: error.message
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: error.message,
         });
       }
     }
   };
 
   const handleEdit = (id) => {
-    const agendaToEdit = proposeagenda.find((item) => item.id === id);
-    if (agendaToEdit) {
-      setFormData({ title: agendaToEdit.title, date: agendaToEdit.date });
-      setPdfFileName(agendaToEdit.pdf_url || "");
+    const itemToEdit = data.find((item) => item.id === id);
+    if (itemToEdit) {
+      setFormData({
+        title: itemToEdit.title,
+        date: itemToEdit.date,
+        posted_day: itemToEdit.posted_day, // เพิ่ม posted_day
+      });
+      setPdfFileName(itemToEdit.pdf_url || "");
       setEditId(id);
       setShowForm(true);
     }
@@ -116,34 +121,35 @@ function AdminProposeAgenda() {
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: 'คุณแน่ใจหรือไม่?',
+      title: "คุณแน่ใจหรือไม่?",
       text: "คุณต้องการลบข้อมูลนี้หรือไม่?",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'ใช่, ลบเลย!'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "ใช่, ลบเลย!",
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`${import.meta.env.VITE_API_KEY}/api/proposeagenda/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/newselectic/${id}`)
           .then(() => {
-            fetchProposeAgenda();
-            Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
+            fetchData(); // ดึงข้อมูลใหม่หลังลบสำเร็จ
+            Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
           })
           .catch((error) => {
             Swal.fire({
-              icon: 'error',
-              title: 'เกิดข้อผิดพลาด',
-              text: 'ไม่สามารถลบข้อมูลได้'
+              icon: "error",
+              title: "เกิดข้อผิดพลาด",
+              text: "ไม่สามารถลบข้อมูลได้",
             });
           });
       }
     });
   };
+  
 
   const resetForm = () => {
-    setFormData({ title: "", date: "" });
+    setFormData({ title: "", date: "", posted_day: "" });
     setPdfFile(null);
     setPdfFileName("");
     setEditId(null);
@@ -155,7 +161,7 @@ function AdminProposeAgenda() {
 
   return (
     <div className="container py-5" style={{ marginRight: "10%", marginTop: "1%" }}>
-      <h1 className="text-center mb-4">จัดการข้อมูลเสนอวาระการประชุม</h1>
+      <h1 className="text-center mb-4">จัดการข่าวแจ้งตลาดหลักทรัพย์</h1>
 
       <div className="d-flex justify-content-end mb-4">
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
@@ -168,7 +174,7 @@ function AdminProposeAgenda() {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="title" className="form-label">หัวข้อ</label>
+                <label htmlFor="title" className="form-label">หัวข้อข่าว</label>
                 <input
                   type="text"
                   id="title"
@@ -190,6 +196,17 @@ function AdminProposeAgenda() {
                 />
               </div>
               <div className="mb-3">
+                <label htmlFor="posted_day" className="form-label">วันที่เผยแพร่</label>
+                <input
+                  type="text"
+                  id="posted_day"
+                  className="form-control"
+                  value={formData.posted_day}
+                  onChange={(e) => setFormData({ ...formData, posted_day: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-3">
                 <label>ไฟล์ PDF</label>
                 <div className="custom-file">
                   <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
@@ -204,7 +221,7 @@ function AdminProposeAgenda() {
                       setPdfFile(e.target.files[0]);
                       setPdfFileName(e.target.files[0]?.name || "");
                     }}
-                    style={{ display: 'none' }}
+                    style={{ display: "none" }}
                   />
                 </div>
                 {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
@@ -232,18 +249,20 @@ function AdminProposeAgenda() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>หัวข้อ</th>
+                <th>หัวข้อข่าว</th>
                 <th>วันที่</th>
-                <th style={{ width: '100px' }}>ไฟล์ PDF</th>
+                <th>วันที่เผยแพร่</th>
+                <th style={{ width: "100px" }}>ไฟล์ PDF</th>
                 <th>การจัดการ</th>
               </tr>
             </thead>
             <tbody>
-              {proposeagenda.map((item, index) => (
+              {data.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.title}</td>
                   <td>{item.date}</td>
+                  <td>{item.posted_day}</td> {/* แสดงเป็นข้อความ */}
                   <td>
                     <a
                       href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
@@ -253,7 +272,7 @@ function AdminProposeAgenda() {
                       <img
                         src="/public/assets/img/pdf.png"
                         alt="ดาวน์โหลด"
-                        style={{ width: '70px', height: '70px' }}
+                        style={{ width: "70px", height: "70px" }}
                       />
                     </a>
                   </td>
@@ -275,4 +294,4 @@ function AdminProposeAgenda() {
   );
 }
 
-export default AdminProposeAgenda;
+export default AdminNewselectic;

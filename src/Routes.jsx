@@ -26,6 +26,9 @@ import Adminthreeyear from "./pages/Adminthreeyear";
 import Adminquarter from "./pages/Adminquarter";
 import Adminpolicypayment from "./pages/Adminpolicypayment";
 import Adminpropose from "./pages/Adminpropose";
+import Adminrulecompany from "./pages/Adminrulecompany";
+import Adminnewselectic from "./pages/Adminnewselectic";
+import AdminVdomeet from "./pages/AdminVdomeet";
 
 
 
@@ -62,7 +65,9 @@ const RoutesPage = () => {
           <Route path="/Adminquarter" element={<Adminquarter />} />
           <Route path="/Adminpolicypayment" element={<Adminpolicypayment />} />
           <Route path="/Adminpropose" element={<Adminpropose />} />
-
+          <Route path="/Adminrulecompany" element={<Adminrulecompany />} />
+          <Route path="/Adminnewselectic" element={<Adminnewselectic />} />
+          <Route path="/AdminVdomeet" element={<AdminVdomeet />} />
           
         </Route>
       </Routes>

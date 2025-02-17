@@ -53,7 +53,7 @@ function Adminreportmuser() {
       let response;
       if (editId) {
         response = await axios.post(
-          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser/${editId}`,
+          `${import.meta.env.VITE_API_KEY}/api/reportmtuser/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -64,7 +64,7 @@ function Adminreportmuser() {
         });
       } else {
         response = await axios.post(
-          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser",
+          `${import.meta.env.VITE_API_KEY}/api/reportmtuser`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -108,7 +108,7 @@ function Adminreportmuser() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/reportmtuser/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/reportmtuser/${id}`)
           .then(() => {
             fetchReportmuser();
             Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
@@ -199,7 +199,7 @@ function Adminreportmuser() {
               <td>{item.title}</td>
               <td>
                 <a
-                  href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${item.pdf_file}`}
+                  href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_file}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

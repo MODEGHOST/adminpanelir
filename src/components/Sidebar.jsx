@@ -7,13 +7,13 @@ export default function Sidebar() {
     <>
       <aside className="main-sidebar nav-pills sidebar-dark-primary sidebar-no-expand elevation-1">
         <Link to="/" className="brand-link">
-          <img
+          {/* <img
             src={Logo}
             alt="AdminLTE Logo"
             className="brand-image img-circle elevation-1"
             style={{ opacity: ".8" }}
-          />
-          <span className="brand-text font-weight-light">ADMIN WEB IR</span>
+          /> */}
+          <span className="brand-text font-weight-light">ADMIN WEB TRU IR</span>
         </Link>
         <div className="sidebar">
           <nav className="mt-2">
@@ -48,17 +48,29 @@ export default function Sidebar() {
                   <p>Media News</p>
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/Adminnewselectic" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Electronic News</p>
+                </Link>
+              </li>
               <li className="nav-header">Document Menu</li>
               <li className="nav-item">
                 <Link to="/Admingovernan" className="nav-link">
                   <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
-                  <p>Guides & Rules</p>
+                  <p>Guides</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/Adminrulecompany" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Rules</p>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to="/Admindocread" className="nav-link">
                   <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
-                  <p>One Report</p>
+                  <p>56-1 Report</p>
                 </Link>
               </li>
               <li className="nav-item">
@@ -126,6 +138,12 @@ export default function Sidebar() {
                 <Link to="/Adminquarter" className="nav-link">
                   <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
                   <p>Quarter</p>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/AdminVdomeet" className="nav-link">
+                  <i className="fas fa-circle nav-icon" style={{ fontSize: "0.5rem", marginRight: "8px" }}></i>
+                  <p>Vdomeet</p>
                 </Link>
               </li>
               

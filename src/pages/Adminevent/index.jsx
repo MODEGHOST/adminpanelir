@@ -27,7 +27,7 @@ function AdminEvent() {
     axios
       .get(`${import.meta.env.VITE_API_KEY}/api/events`)
       .then((response) => {
-        setEvents(response.data.data);
+        setEvents(response.data.data || []); // ตรวจสอบให้แน่ใจว่า `data` มีค่า
       })
       .catch((error) => {
         console.error("Error fetching events:", error);
@@ -36,12 +36,14 @@ function AdminEvent() {
 
   // ฟังก์ชันแปลงรูปแบบวันที่ก่อนส่งไป Backend (YYYY-MM-DD)
   const formatDateToISO = (date) => {
+    if (!date) return ""; // ตรวจสอบว่าค่า `date` ไม่เป็น null หรือ undefined
     const [year, month, day] = date.split("-");
     return `${year}-${month}-${day}`;
   };
 
   // ฟังก์ชันแปลงรูปแบบวันที่สำหรับแสดงผล (DD/MM/YYYY)
   const formatDateToDisplay = (date) => {
+    if (!date) return "-"; // กรณีที่ `date` ไม่มีค่า
     const [year, month, day] = date.split("-");
     return `${day}/${month}/${year}`;
   };
@@ -68,8 +70,10 @@ function AdminEvent() {
       date: formatDateToISO(formData.date), // ส่งเป็น YYYY-MM-DD
     };
 
+    console.log("Data to send:", formattedData);
+
     axios
-      .post("http://localhost:8000/api/events", formattedData)
+      .post(`${import.meta.env.VITE_API_KEY}/api/events`, formattedData)
       .then(() => {
         fetchEvents();
         resetForm();
@@ -84,7 +88,7 @@ function AdminEvent() {
     const event = events.find((e) => e.id === id);
     setFormData({
       ...event,
-      date: formatDateToISO(event.date), // คงรูปแบบวันที่ไว้ตอนแก้ไข
+      date: formatDateToISO(event?.date || ""), // ตรวจสอบว่าค่า `date` ไม่เป็น null
     });
     setEditId(id);
     setShowForm(true);
@@ -97,7 +101,7 @@ function AdminEvent() {
     };
 
     axios
-      .put(`http://localhost:8000/api/events/${editId}`, formattedData)
+      .put(`${import.meta.env.VITE_API_KEY}/api/events/${editId}`, formattedData)
       .then(() => {
         fetchEvents();
         resetForm();
@@ -110,7 +114,7 @@ function AdminEvent() {
   // ลบกิจกรรม
   const handleDelete = (id) => {
     axios
-      .delete(`http://localhost:8000/api/events/${id}`)
+      .delete(`${import.meta.env.VITE_API_KEY}/api/events/${id}`)
       .then(() => {
         fetchEvents();
       })
@@ -123,7 +127,7 @@ function AdminEvent() {
   const resetForm = () => {
     setFormData({
       id: null,
-      date: new Date().toISOString().split("T")[0], // รีเซ็ตวันที่เป็นปัจจุบัน
+      date: new Date().toISOString().split("T")[0],
       title: "",
       description: "",
     });
@@ -210,7 +214,7 @@ function AdminEvent() {
             currentEvents.map((event, index) => (
               <tr key={event.id}>
                 <td>{indexOfFirstItem + index + 1}</td>
-                <td>{formatDateToDisplay(event.date)}</td> {/* แสดง DD/MM/YYYY */}
+                <td>{event.date ? formatDateToDisplay(event.date) : "-"}</td>
                 <td>{event.title}</td>
                 <td>{event.description}</td>
                 <td>

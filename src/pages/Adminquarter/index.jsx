@@ -42,7 +42,7 @@ function Adminquarter() {
   const [showQuarandyearForm, setShowQuarandyearForm] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/quarterly/all").then((response) => {
+    axios.get(`${import.meta.env.VITE_API_KEY}/api/quarterly/all`).then((response) => {
       const sortedData = response.data.data.sort((a, b) => b.year - a.year);
       setQuarterlyData(sortedData);
     }).catch((error) => {
@@ -50,7 +50,7 @@ function Adminquarter() {
       Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูล quarterly ได้", "error");
     });
 
-    axios.get("http://localhost:8000/api/quarandyear/all").then((response) => {
+    axios.get(`${import.meta.env.VITE_API_KEY}/api/quarandyear/all`).then((response) => {
       setQuarandyearData(response.data.data);
     }).catch((error) => {
       console.error("Error fetching quarandyear data:", error);
@@ -65,11 +65,11 @@ function Adminquarter() {
   const handleQuarandyearChange = (e) => {
     setQuarandyearFormData({ ...quarandyearFormData, [e.target.name]: e.target.value });
   };
-
+ 
   const handleQuarterSubmit = (e) => {
     e.preventDefault();
     if (quarterEditId) {
-      axios.put(`http://localhost:8000/api/quarterly/${quarterEditId}`, quarterFormData).then((response) => {
+      axios.put(`${import.meta.env.VITE_API_KEY}/api/quarterly/${quarterEditId}`, quarterFormData).then((response) => {
         setQuarterlyData(quarterlyData.map((data) => data.id === quarterEditId ? response.data.data : data));
         resetQuarterForm();
         Swal.fire("สำเร็จ", "แก้ไขข้อมูล Quarterly เรียบร้อยแล้ว", "success");
@@ -78,7 +78,7 @@ function Adminquarter() {
         Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
       });
     } else {
-      axios.post("http://localhost:8000/api/quarterly", quarterFormData).then((response) => {
+      axios.post(`${import.meta.env.VITE_API_KEY}/api/quarterly`, quarterFormData).then((response) => {
         setQuarterlyData([...quarterlyData, response.data.data]);
         resetQuarterForm();
         Swal.fire("สำเร็จ", "เพิ่มข้อมูล Quarterly เรียบร้อยแล้ว", "success");
@@ -92,7 +92,7 @@ function Adminquarter() {
   const handleQuarandyearSubmit = (e) => {
     e.preventDefault();
     if (quarandyearEditId) {
-      axios.put(`http://localhost:8000/api/quarandyear/${quarandyearEditId}`, quarandyearFormData).then((response) => {
+      axios.put(`${import.meta.env.VITE_API_KEY}/api/quarandyear/${quarandyearEditId}`, quarandyearFormData).then((response) => {
         setQuarandyearData(quarandyearData.map((data) => data.id === quarandyearEditId ? response.data.data : data));
         resetQuarandyearForm();
         Swal.fire("สำเร็จ", "แก้ไขข้อมูล Quarandyear เรียบร้อยแล้ว", "success");
@@ -101,7 +101,7 @@ function Adminquarter() {
         Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
       });
     } else {
-      axios.post("http://localhost:8000/api/quarandyear", quarandyearFormData).then((response) => {
+      axios.post(`${import.meta.env.VITE_API_KEY}/api/quarandyear`, quarandyearFormData).then((response) => {
         setQuarandyearData([...quarandyearData, response.data.data]);
         resetQuarandyearForm();
         Swal.fire("สำเร็จ", "เพิ่มข้อมูล Quarandyear เรียบร้อยแล้ว", "success");
@@ -172,7 +172,7 @@ function Adminquarter() {
       confirmButtonText: "ใช่, ลบเลย!",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.delete(`http://localhost:8000/api/quarterly/${id}`).then(() => {
+        axios.delete(`${import.meta.env.VITE_API_KEY}/api/quarterly/${id}`).then(() => {
           setQuarterlyData(quarterlyData.filter((data) => data.id !== id));
           Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
         }).catch((error) => {
@@ -194,7 +194,7 @@ function Adminquarter() {
       confirmButtonText: "ใช่, ลบเลย!",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.delete(`http://localhost:8000/api/quarandyear/${id}`).then(() => {
+        axios.delete(`${import.meta.env.VITE_API_KEY}/api/quarandyear/${id}`).then(() => {
           setQuarandyearData(quarandyearData.filter((data) => data.id !== id));
           Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
         }).catch((error) => {
@@ -231,8 +231,8 @@ function Adminquarter() {
 {showQuarterForm && (
   <div className="card mb-4">
     <div className="card-body">
-      <h5 className="card-title">{editId ? "แก้ไขข้อมูล" : "เพิ่มข้อมูล"}</h5>
-      <form onSubmit={handleSubmit}>
+      <h5 className="card-title">{quarterEditId ? "แก้ไขข้อมูล" : "เพิ่มข้อมูล"}</h5>
+      <form onSubmit={handleQuarterSubmit}>
         <div className="row g-3">
           <div className="col-md-4">
             <label htmlFor="quarter" className="form-label">ไตรมาส</label>
@@ -241,8 +241,8 @@ function Adminquarter() {
               id="quarter"
               name="quarter"
               className="form-control"
-              value={formData.quarter}
-              onChange={handleChange}
+              value={quarterFormData.quarter}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -253,8 +253,8 @@ function Adminquarter() {
               id="sales_and_services_income"
               name="sales_and_services_income"
               className="form-control"
-              value={formData.sales_and_services_income}
-              onChange={handleChange}
+              value={quarterFormData.sales_and_services_income}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -265,8 +265,8 @@ function Adminquarter() {
               id="total_income"
               name="total_income"
               className="form-control"
-              value={formData.total_income}
-              onChange={handleChange}
+              value={quarterFormData.total_income}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -277,8 +277,8 @@ function Adminquarter() {
               id="gross_profit"
               name="gross_profit"
               className="form-control"
-              value={formData.gross_profit}
-              onChange={handleChange}
+              value={quarterFormData.gross_profit}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -289,8 +289,8 @@ function Adminquarter() {
               id="ebitda"
               name="ebitda"
               className="form-control"
-              value={formData.ebitda}
-              onChange={handleChange}
+              value={quarterFormData.ebitda}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -301,8 +301,8 @@ function Adminquarter() {
               id="ebit"
               name="ebit"
               className="form-control"
-              value={formData.ebit}
-              onChange={handleChange}
+              value={quarterFormData.ebit}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -313,8 +313,8 @@ function Adminquarter() {
               id="net_profit_loss"
               name="net_profit_loss"
               className="form-control"
-              value={formData.net_profit_loss}
-              onChange={handleChange}
+              value={quarterFormData.net_profit_loss}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -325,8 +325,8 @@ function Adminquarter() {
               id="total_assets"
               name="total_assets"
               className="form-control"
-              value={formData.total_assets}
-              onChange={handleChange}
+              value={quarterFormData.total_assets}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -337,8 +337,8 @@ function Adminquarter() {
               id="total_liabilities"
               name="total_liabilities"
               className="form-control"
-              value={formData.total_liabilities}
-              onChange={handleChange}
+              value={quarterFormData.total_liabilities}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -349,8 +349,8 @@ function Adminquarter() {
               id="shareholders_equity"
               name="shareholders_equity"
               className="form-control"
-              value={formData.shareholders_equity}
-              onChange={handleChange}
+              value={quarterFormData.shareholders_equity}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -361,8 +361,8 @@ function Adminquarter() {
               id="gross_profit_margin"
               name="gross_profit_margin"
               className="form-control"
-              value={formData.gross_profit_margin}
-              onChange={handleChange}
+              value={quarterFormData.gross_profit_margin}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -373,8 +373,8 @@ function Adminquarter() {
               id="ebitda_margin"
               name="ebitda_margin"
               className="form-control"
-              value={formData.ebitda_margin}
-              onChange={handleChange}
+              value={quarterFormData.ebitda_margin}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -385,8 +385,8 @@ function Adminquarter() {
               id="net_profit_margin"
               name="net_profit_margin"
               className="form-control"
-              value={formData.net_profit_margin}
-              onChange={handleChange}
+              value={quarterFormData.net_profit_margin}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -397,8 +397,8 @@ function Adminquarter() {
               id="return_on_assets"
               name="return_on_assets"
               className="form-control"
-              value={formData.return_on_assets}
-              onChange={handleChange}
+              value={quarterFormData.return_on_assets}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -409,8 +409,8 @@ function Adminquarter() {
               id="return_on_equity"
               name="return_on_equity"
               className="form-control"
-              value={formData.return_on_equity}
-              onChange={handleChange}
+              value={quarterFormData.return_on_equity}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -421,8 +421,8 @@ function Adminquarter() {
               id="current_ratio"
               name="current_ratio"
               className="form-control"
-              value={formData.current_ratio}
-              onChange={handleChange}
+              value={quarterFormData.current_ratio}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -433,8 +433,8 @@ function Adminquarter() {
               id="debt_to_equity_ratio"
               name="debt_to_equity_ratio"
               className="form-control"
-              value={formData.debt_to_equity_ratio}
-              onChange={handleChange}
+              value={quarterFormData.debt_to_equity_ratio}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -445,8 +445,8 @@ function Adminquarter() {
               id="par_value"
               name="par_value"
               className="form-control"
-              value={formData.par_value}
-              onChange={handleChange}
+              value={quarterFormData.par_value}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -457,8 +457,8 @@ function Adminquarter() {
               id="book_value_per_share"
               name="book_value_per_share"
               className="form-control"
-              value={formData.book_value_per_share}
-              onChange={handleChange}
+              value={quarterFormData.book_value_per_share}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -469,8 +469,8 @@ function Adminquarter() {
               id="net_profit_per_share"
               name="net_profit_per_share"
               className="form-control"
-              value={formData.net_profit_per_share}
-              onChange={handleChange}
+              value={quarterFormData.net_profit_per_share}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -481,8 +481,8 @@ function Adminquarter() {
               id="registered_common_shares"
               name="registered_common_shares"
               className="form-control"
-              value={formData.registered_common_shares}
-              onChange={handleChange}
+              value={quarterFormData.registered_common_shares}
+              onChange={handleQuarterChange}
               required
             />
           </div>
@@ -493,19 +493,20 @@ function Adminquarter() {
               id="paid_common_shares"
               name="paid_common_shares"
               className="form-control"
-              value={formData.paid_common_shares}
-              onChange={handleChange}
+              value={quarterFormData.paid_common_shares}
+              onChange={handleQuarterChange}
               required
             />
           </div>
         </div>
         <button type="submit" className="btn btn-success mt-3">
-          {editId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
+          {quarterEditId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
         </button>
       </form>
     </div>
   </div>
 )}
+
 
 
 
@@ -520,29 +521,28 @@ function Adminquarter() {
         <thead style={{ position: "sticky", top: "0", backgroundColor: "#f8f9fa", zIndex: 2 }}>
           <tr>
             <th style={{ textAlign: "center", backgroundColor: "#e9ecef" }}>ไตรมาส</th>
-            <th>รายได้จากการขายและบริการ</th>
-<th>รายได้รวม1</th>
-<th>กำไร (ขาดทุน) ขั้นต้น</th>
-<th>กำไรก่อนดอกเบี้ย ภาษี ค่าเสื่อมราคาและ ค่าตัดจำหน่าย</th>
-<th>กำไรก่อนดอกเบี้ยและภาษี</th>
-<th>กำไร (ขาดทุน) สุทธิ 2</th>
+            <th>รายได้ขาย/บริการ</th>
+<th>รายได้รวม</th>
+<th>กำไรขั้นต้น</th>
+<th>EBITDA</th>
+<th>EBIT</th>
+<th>กำไรสุทธิ</th>
 <th>สินทรัพย์รวม</th>
 <th>หนี้สินรวม</th>
-<th>ส่วนของผู้ถือหุ้น</th>
+<th>ส่วนผู้ถือหุ้น</th>
 <th>อัตรากำไรขั้นต้น</th>
-<th>กำไรก่อนดอกเบี้ย ภาษี ค่าเสื่อมราคาและ ค่าตัดจำหน่าย</th>
+<th>EBITDA Margin</th>
 <th>อัตรากำไรสุทธิ</th>
-<th>อัตราผลตอบแทนจากสินทรัพย์รวม</th>
-<th>อัตราผลตอบแทนจากส่วนของผู้ถือหุ้น</th>
-<th>อัตราส่วนเงินทุนหมุนเวียน</th>
-<th>อัตราส่วนหนี้สินต่อส่วนของผู้ถือหุ้น</th>
-<th>มูลค่าที่ตราไว้</th>
-<th>มูลค่าทางบัญชีต่อหุ้น</th>
-<th>กำไรสุทธิต่อหุ้น</th>
-<th>จำนวนหุ้นสามัญจดทะเบียน</th>
-<th>จำนวนหุ้นสามัญชำระแล้ว</th>
+<th>ROA</th>
+<th>ROE</th>
+<th>เงินทุนหมุนเวียน</th>
+<th>D/E Ratio</th>
+<th>มูลค่าตราไว้</th>
+<th>มูลค่าบัญชี/หุ้น</th>
+<th>กำไร/หุ้น</th>
+<th>หุ้นจดทะเบียน</th>
+<th>หุ้นชำระแล้ว</th>
 <th>จัดการ</th>
-
           </tr>
         </thead>
         <tbody>
@@ -582,14 +582,14 @@ function Adminquarter() {
                 <td>
                   <button
                     className="btn btn-warning btn-sm me-2"
-                    onClick={() => handleEdit(data.id)}
+                    onClick={() => handleQuarterEdit(data.id)}
                     title="แก้ไขข้อมูล"
                   >
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
                   <button
                     className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(data.id)}
+                    onClick={() => handleQuarterDelete(data.id)}
                     title="ลบข้อมูล"
                   >
                     <FontAwesomeIcon icon={faTrashAlt} />
@@ -657,14 +657,14 @@ function Adminquarter() {
           )}
           <div className="table-responsive">
             <table className="table table-bordered table-hover">
-              <thead>
-                <tr>
-                <th style={{ width: "50px", textAlign: "center" }}>#</th>
-                <th style={{ width: "100px", textAlign: "center" }}>Q Percent</th>
-                <th style={{ width: "100px", textAlign: "center" }}>Y Percent</th>
-                <th style={{ width: "100px", textAlign: "center" }}>จัดการ</th>
-                </tr>
-              </thead>
+            <thead>
+              <tr>
+                <th style={{ width: "4px", textAlign: "center", padding: "8px" }}>#</th>
+                <th style={{ width: "8px", textAlign: "center", padding: "8px" }}>Q Percent</th>
+                <th style={{ width: "8px", textAlign: "center", padding: "8px" }}>Y Percent</th>
+                <th style={{ width: "10px", textAlign: "center", padding: "8px" }}>จัดการ</th>
+              </tr>
+            </thead>
               <tbody>
                 {quarandyearData.length > 0 ? (
                   quarandyearData.map((data) => (

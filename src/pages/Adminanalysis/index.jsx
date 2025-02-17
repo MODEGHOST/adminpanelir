@@ -67,7 +67,7 @@ function Adminanalysis() {
       if (editId) {
         // อัปเดตข้อมูล
         response = await axios.post(
-          `http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/analysis/${editId}`,
+          `${import.meta.env.VITE_API_KEY}/api/analysis/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -79,7 +79,7 @@ function Adminanalysis() {
       } else {
         // เพิ่มข้อมูลใหม่
         response = await axios.post(
-          "http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/analysis",
+          `${import.meta.env.VITE_API_KEY}/api/analysis`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -133,7 +133,7 @@ function Adminanalysis() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://129.200.6.52/laravel_auth_jwt_api_omd/public/api/analysis/${id}`);
+          await axios.delete(`${import.meta.env.VITE_API_KEY}/api/analysis/${id}`);
           fetchData();
           Swal.fire("ลบสำเร็จ!", "ข้อมูลได้ถูกลบแล้ว.", "success");
         } catch (error) {
@@ -254,7 +254,7 @@ function Adminanalysis() {
                   <td>{item.date}</td>
                   <td>
                     <a
-                      href={`http://129.200.6.52/laravel_auth_jwt_api_omd/storage/app/public/uploads/pdf_files/${item.pdf_url}`}
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

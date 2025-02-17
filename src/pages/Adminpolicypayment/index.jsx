@@ -21,7 +21,7 @@ function Adminpolicypayment() {
 
   const fetchPolicypayment = () => {
     axios
-      .get(`http://localhost:8000/api/policypayment`)
+      .get(`${import.meta.env.VITE_API_KEY}/api/policypayment`)
       .then((response) => {
         setPolicypayment(response.data);
         setLoading(false);
@@ -63,7 +63,7 @@ function Adminpolicypayment() {
       let response;
       if (editId) {
         response = await axios.post(
-          `http://localhost:8000/api/policypayment/${editId}`,
+          `${import.meta.env.VITE_API_KEY}/api/policypayment/${editId}`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -74,7 +74,7 @@ function Adminpolicypayment() {
         });
       } else {
         response = await axios.post(
-          "http://localhost:8000/api/policypayment",
+          `${import.meta.env.VITE_API_KEY}/api/policypayment`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -126,7 +126,7 @@ function Adminpolicypayment() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://localhost:8000/api/policypayment/${id}`)
+          .delete(`${import.meta.env.VITE_API_KEY}/api/policypayment/${id}`)
           .then(() => {
             fetchPolicypayment();
             Swal.fire('ลบสำเร็จ!', 'ข้อมูลได้ถูกลบแล้ว.', 'success');
@@ -246,7 +246,7 @@ function Adminpolicypayment() {
                   <td>{item.date}</td>
                   <td>
                     <a
-                      href={`http://localhost:8000/storage/uploads/pdf_files/${item.pdf_url}`}
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
