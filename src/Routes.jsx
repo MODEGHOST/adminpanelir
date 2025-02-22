@@ -34,7 +34,7 @@ import AdminVdomeet from "./pages/AdminVdomeet";
 
 const RoutesPage = () => {
   return (
-    <Router>
+    <Router basename="/thairung/adminir">
       <Routes>
         <Route element={<WithOutnavbar />}>
           <Route exact  path="/auth/signin" element={<Signin />} />

@@ -246,7 +246,7 @@ function AdminRuleCompany() {
                   <td>{item.date}</td>
                   <td>
                     <a
-                      href={item.pdf_url}
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

@@ -9,7 +9,7 @@ export default function Signup() {
   const { register, handleSubmit,  formState: { errors } } = useForm();
 
   //const REACT_APP_API = 'https://express-mongodb-api-server.onrender.com/api/auth/register'
-  const REACT_APP_API = 'https://full-stack-app.com/laravel_auth_jwt_api/public/api/auth/register'
+  const REACT_APP_API = 'https://www.sxcretlab.com/laravel_auth_jwt_api_omd/public/api/auth/register'
 
   const onSubmit = async data => {
     try {

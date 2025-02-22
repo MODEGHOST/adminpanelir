@@ -21,6 +21,10 @@ function Index() {
   const [editId, setEditId] = useState(null);
   const [searchDate, setSearchDate] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [rowsToShow, setRowsToShow] = useState(10); // ค่าเริ่มต้นเป็น 10 แถว
+  const [csvFile, setCsvFile] = useState(null);
+
+
 
   useEffect(() => {
     axios
@@ -46,61 +50,94 @@ function Index() {
     setFilteredPrices(filtered);
   };
 
+  const handleFileChange = (e) => {
+    setCsvFile(e.target.files[0]);
+};
+
+const handleImportCSV = () => {
+  if (!csvFile) {
+      Swal.fire("กรุณาเลือกไฟล์", "กรุณาเลือกไฟล์ CSV ก่อนอัปโหลด", "warning");
+      return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", csvFile);
+
+  axios.post(`${import.meta.env.VITE_API_KEY}/api/stock-prices/import-csv`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+  })
+  .then((response) => {
+      Swal.fire("นำเข้าสำเร็จ", response.data.message, "success");
+      setCsvFile(null);
+      document.getElementById("csv-file-input").value = "";
+  })
+  .catch((error) => {
+      console.error("Error importing CSV:", error);
+      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถนำเข้าข้อมูลได้", "error");
+  });
+};
+
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     console.log("📤 ส่งข้อมูลไปยัง API:", formData); // ✅ ตรวจสอบข้อมูลที่ถูกส่งไป
-  
+
     if (editId) {
-      console.log(`🛠 กำลังอัปเดตข้อมูลที่ ID: ${editId}`);
-  
-      axios
-        .put(`${import.meta.env.VITE_API_KEY}/api/stock-prices/${editId}`, formData)
-        .then((response) => {
-          console.log("✅ API ตอบกลับ:", response.data); // ✅ ตรวจสอบ Response ที่ได้รับกลับมา
-  
-          setStockPrices(
-            stockPrices.map((price) =>
-              price.id === editId ? response.data : price
-            )
-          );
-          setFilteredPrices(
-            filteredPrices.map((price) =>
-              price.id === editId ? response.data : price
-            )
-          );
-          resetForm();
-          Swal.fire("สำเร็จ", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
-        })
-        .catch((error) => {
-          console.error("❌ Error updating stock price:", error);
-          console.error("🔍 ข้อผิดพลาดจาก API:", error.response?.data || error);
-          Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
-        });
+        console.log(`🛠 กำลังอัปเดตข้อมูลที่ ID: ${editId}`);
+
+        axios.put(`${import.meta.env.VITE_API_KEY}/api/stock-prices/${editId}`, formData)
+            .then((response) => {
+                console.log("✅ API ตอบกลับ:", response.data); // ✅ ตรวจสอบ Response ที่ได้รับกลับมา
+
+                setStockPrices((prevStockPrices) =>
+                    prevStockPrices
+                        .map((price) => (price.id === editId ? response.data : price))
+                        .sort((a, b) => new Date(b.date) - new Date(a.date)) // เรียงตามวันที่
+                );
+
+                setFilteredPrices((prevFilteredPrices) =>
+                    prevFilteredPrices
+                        .map((price) => (price.id === editId ? response.data : price))
+                        .sort((a, b) => new Date(b.date) - new Date(a.date)) // เรียงตามวันที่
+                );
+
+                resetForm();
+                Swal.fire("สำเร็จ", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
+            })
+            .catch((error) => {
+                console.error("❌ Error updating stock price:", error);
+                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
+            });
     } else {
-      console.log("➕ กำลังเพิ่มข้อมูลใหม่...");
-  
-      axios
-        .post(`${import.meta.env.VITE_API_KEY}/api/stock-prices`, formData)
-        .then((response) => {
-          console.log("✅ API ตอบกลับ:", response.data); // ✅ ตรวจสอบ Response ที่ได้รับกลับมา
-  
-          setStockPrices([...stockPrices, response.data]);
-          setFilteredPrices([...filteredPrices, response.data]);
-          resetForm();
-          Swal.fire("สำเร็จ", "เพิ่มข้อมูลเรียบร้อยแล้ว", "success");
-        })
-        .catch((error) => {
-          console.error("❌ Error adding stock price:", error);
-          console.error("🔍 ข้อผิดพลาดจาก API:", error.response?.data || error);
-          Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเพิ่มข้อมูลได้", "error");
-        });
+        console.log("➕ กำลังเพิ่มข้อมูลใหม่...");
+
+        axios.post(`${import.meta.env.VITE_API_KEY}/api/stock-prices`, formData)
+            .then((response) => {
+                console.log("✅ API ตอบกลับ:", response.data); // ✅ ตรวจสอบ Response ที่ได้รับกลับมา
+
+                setStockPrices((prevStockPrices) =>
+                    [...prevStockPrices, response.data].sort((a, b) => new Date(b.date) - new Date(a.date))
+                );
+
+                setFilteredPrices((prevFilteredPrices) =>
+                    [...prevFilteredPrices, response.data].sort((a, b) => new Date(b.date) - new Date(a.date))
+                );
+
+                resetForm();
+                Swal.fire("สำเร็จ", "เพิ่มข้อมูลเรียบร้อยแล้ว", "success");
+            })
+            .catch((error) => {
+                console.error("❌ Error adding stock price:", error);
+                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเพิ่มข้อมูลได้", "error");
+            });
     }
-  };
+};
+
   
   const resetForm = () => {
     setFormData({
@@ -179,6 +216,17 @@ function Index() {
               {showForm ? "ปิดฟอร์ม" : "เพิ่มข้อมูล"}
             </button>
           </div>
+          <div className="d-flex gap-2">
+    <input
+        type="file"
+        id="csv-file-input"
+        className="form-control"
+        accept=".csv"
+        onChange={handleFileChange}
+    />
+    <button className="btn btn-success" onClick={handleImportCSV}>นำเข้า CSV</button>
+</div>
+
 
           {showForm && (
             <div className="card mb-4">
@@ -342,43 +390,50 @@ function Index() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPrices.length > 0 ? (
-                      filteredPrices.map((price) => (
-                        <tr key={price.id}>
-                          <td>{price.date}</td>
-                          <td>{price.open_price}</td>
-                          <td>{price.high_price}</td>
-                          <td>{price.low_price}</td>
-                          <td>{price.previous_close_price}</td>
-                          <td>{price.change}</td>
-                          <td>{price.changepercent}</td>
-                          <td>{price.trading_value}</td>
-                          <td>{price.trade_amount}</td>
-                          <td>
-                            <button
-                              className="btn btn-warning btn-sm me-2"
-                              onClick={() => handleEdit(price.id)}
-                            >
-                              <FontAwesomeIcon icon={faEdit} className="me-1" />
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleDelete(price.id)}
-                            >
-                              <FontAwesomeIcon icon={faTrashAlt} className="me-1" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="9" className="text-center">
-                          ไม่พบข้อมูล
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
+  {filteredPrices.length > 0 ? (
+    filteredPrices.slice(0, rowsToShow).map((price) => (
+      <tr key={price.id}>
+        <td>{price.date}</td>
+        <td>{price.open_price}</td>
+        <td>{price.high_price}</td>
+        <td>{price.low_price}</td>
+        <td>{price.previous_close_price}</td>
+        <td>{price.change}</td>
+        <td>{price.changepercent}</td>
+        <td>{price.trading_value}</td>
+        <td>{price.trade_amount}</td>
+        <td>
+          <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(price.id)}>
+            <FontAwesomeIcon icon={faEdit} className="me-1" />
+          </button>
+          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(price.id)}>
+            <FontAwesomeIcon icon={faTrashAlt} className="me-1" />
+          </button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="10" className="text-center">ไม่พบข้อมูล</td>
+    </tr>
+  )}
+</tbody>
+
                 </table>
+                <div className="d-flex justify-content-end mt-3">
+  <label className="me-2">แสดงข้อมูล:</label>
+  <select
+    className="form-select w-auto"
+    value={rowsToShow}
+    onChange={(e) => setRowsToShow(Number(e.target.value))}
+  >
+    <option value="10">10</option>
+    <option value="25">25</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select>
+</div>
+
               </div>
             </div>
           </div>
