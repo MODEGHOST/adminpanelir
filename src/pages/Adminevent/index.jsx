@@ -7,10 +7,13 @@ function AdminEvent() {
   const [events, setEvents] = useState([]);
   const [formData, setFormData] = useState({
     id: null,
-    date: new Date().toISOString().split("T")[0], // วันที่ปัจจุบันเป็นค่าเริ่มต้น
+    date: new Date().toISOString().split("T")[0], 
     title: "",
+    title_en: "", // ✅ เพิ่ม title_en
     description: "",
+    description_en: "", // ✅ เพิ่ม description_en
   });
+  
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -67,8 +70,11 @@ function AdminEvent() {
   const handleAdd = () => {
     const formattedData = {
       ...formData,
-      date: formatDateToISO(formData.date), // ส่งเป็น YYYY-MM-DD
+      date: formatDateToISO(formData.date), 
+      title_en: formData.title_en, // ✅ ส่งค่า title_en
+      description_en: formData.description_en, // ✅ ส่งค่า description_en
     };
+    
 
     console.log("Data to send:", formattedData);
 
@@ -89,6 +95,8 @@ function AdminEvent() {
     setFormData({
       ...event,
       date: formatDateToISO(event?.date || ""), // ตรวจสอบว่าค่า `date` ไม่เป็น null
+      title_en: event?.title_en || "", // ✅ โหลด title_en
+    description_en: event?.description_en || "", // ✅ โหลด description_en
     });
     setEditId(id);
     setShowForm(true);
@@ -98,6 +106,8 @@ function AdminEvent() {
     const formattedData = {
       ...formData,
       date: formatDateToISO(formData.date),
+      title_en: formData.title_en, // ✅ อัปเดต title_en
+      description_en: formData.description_en, // ✅ อัปเดต description_en
     };
 
     axios
@@ -130,6 +140,8 @@ function AdminEvent() {
       date: new Date().toISOString().split("T")[0],
       title: "",
       description: "",
+      title_en: "",
+      description_en: "",
     });
     setEditId(null);
     setShowForm(false);
@@ -170,12 +182,23 @@ function AdminEvent() {
               />
             </div>
             <div className="col-md-4 mb-3">
-              <label>หัวข้อ</label>
+              <label>หัวข้อ(TH)</label>
               <input
                 type="text"
                 name="title"
                 className="form-control"
                 value={formData.title}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>หัวข้อ(EN)</label>
+              <input
+                type="text"
+                name="title_en"
+                className="form-control"
+                value={formData.title_en}
                 onChange={handleChange}
                 required
               />
@@ -187,6 +210,17 @@ function AdminEvent() {
                 name="description"
                 className="form-control"
                 value={formData.description}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>รายละเอียด</label>
+              <input
+                type="text"
+                name="description_en"
+                className="form-control"
+                value={formData.description_en}
                 onChange={handleChange}
                 required
               />
@@ -204,8 +238,10 @@ function AdminEvent() {
           <tr>
             <th>#</th>
             <th>วันที่</th>
-            <th>หัวข้อ</th>
-            <th>รายละเอียด</th>
+            <th>หัวข้อ(TH)</th>
+            <th>หัวข้อ(EN)</th>
+            <th>รายละเอียด(TH)</th>
+            <th>รายละเอียด(EN)</th>
             <th>การจัดการ</th>
           </tr>
         </thead>
@@ -216,7 +252,9 @@ function AdminEvent() {
                 <td>{indexOfFirstItem + index + 1}</td>
                 <td>{event.date ? formatDateToDisplay(event.date) : "-"}</td>
                 <td>{event.title}</td>
+                <td>{event.title_en}</td>
                 <td>{event.description}</td>
+                <td>{event.description_en}</td>
                 <td>
                   <button
                     className="btn btn-warning me-2"

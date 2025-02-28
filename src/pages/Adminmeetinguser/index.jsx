@@ -9,11 +9,14 @@ function Adminmeetinguser() {
   const [meetinguser, setMeetinguser] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: "" });
+  const [formData, setFormData] = useState({ title: "", title_en: "" }); // เพิ่ม title_en
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+const [pdfFileEn, setPdfFileEn] = useState(null); // เพิ่มสำหรับไฟล์ PDF ภาษาอังกฤษ
+const [pdfFileNameEn, setPdfFileNameEn] = useState(""); // เพิ่มสำหรับแสดงชื่อไฟล์ PDF ภาษาอังกฤษ
+
 
   useEffect(() => {
     fetchMeetinguser();
@@ -48,6 +51,9 @@ function Adminmeetinguser() {
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     if (pdfFile) formDataToSend.append("pdf_file", pdfFile);
+    formDataToSend.append("title_en", formData.title_en);
+if (pdfFileEn) formDataToSend.append("pdf_file_en", pdfFileEn);
+
 
     try {
       let response;
@@ -93,6 +99,12 @@ function Adminmeetinguser() {
       setPdfFileName(meetinguserToEdit.pdf_file || "");
       setEditId(id);
       setShowForm(true);
+      setFormData({ 
+        title: meetinguserToEdit.title, 
+        title_en: meetinguserToEdit.title_en || "" 
+      });
+      setPdfFileNameEn(meetinguserToEdit.pdf_file_en || "");
+      
     }
   };
 
@@ -130,6 +142,10 @@ function Adminmeetinguser() {
     setPdfFileName("");
     setEditId(null);
     setShowForm(false);
+    setFormData({ title: "", title_en: "" });
+setPdfFileEn(null);
+setPdfFileNameEn("");
+
   };
 
   if (loading) return <div className="loading">กำลังโหลดข้อมูล...</div>;
@@ -148,7 +164,7 @@ function Adminmeetinguser() {
       {showForm && (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="mb-3">
-            <label>หัวข้อรายงาน</label>
+            <label>หัวข้อรายงาน (TH)</label>
             <input
               type="text"
               className="form-control"
@@ -158,7 +174,19 @@ function Adminmeetinguser() {
             />
           </div>
           <div className="mb-3">
-            <label>ไฟล์ PDF</label>
+  <label htmlFor="title_en" className="form-label">หัวข้อรายงาน (EN)</label>
+  <input
+    type="text"
+    id="title_en"
+    className="form-control"
+    value={formData.title_en}
+    onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
+    required
+  />
+</div>
+
+          <div className="mb-3">
+            <label>ไฟล์ PDF(TH)</label>
             <div className="custom-file">
               <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
                 <i className="fa fa-upload"></i> อัปโหลดไฟล์
@@ -177,6 +205,27 @@ function Adminmeetinguser() {
             </div>
             {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
           </div>
+          <div className="mb-3">
+  <label>ไฟล์ PDF (EN)</label>
+  <div className="custom-file">
+    <label htmlFor="pdf_file_en" className="custom-file-label btn btn-primary">
+      <i className="fa fa-upload"></i> อัปโหลดไฟล์
+    </label>
+    <input
+      type="file"
+      id="pdf_file_en"
+      className="custom-file-input"
+      accept="application/pdf"
+      onChange={(e) => {
+        setPdfFileEn(e.target.files[0]);
+        setPdfFileNameEn(e.target.files[0]?.name || "");
+      }}
+      style={{ display: "none" }}
+    />
+  </div>
+  {pdfFileNameEn && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileNameEn}</p>}
+</div>
+
 
           <button type="submit" className="btn btn-success">
             {editId ? "บันทึกการแก้ไข" : "เพิ่มรายงาน"}
@@ -188,8 +237,10 @@ function Adminmeetinguser() {
         <thead>
           <tr>
             <th>#</th>
-            <th>หัวข้อ</th>
-            <th>ไฟล์ PDF</th>
+            <th>หัวข้อ(TH)</th>
+            <th>หัวข้อ(EN)</th>
+            <th>ไฟล์ PDF(TH)</th>
+            <th>ไฟล์ PDF(EN)</th>
             <th>การจัดการ</th>
           </tr>
         </thead>
@@ -198,9 +249,23 @@ function Adminmeetinguser() {
             <tr key={item.id}>
               <td>{index + 1}</td>
               <td>{item.title}</td>
+              <td>{item.title_en}</td>
               <td>
                 <a
                   href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/public/assets/img/pdf.png"
+                    alt="ดาวน์โหลด"
+                    style={{ width: '100px', height: '100px' }}
+                  />
+                </a>
+              </td>
+              <td>
+                <a
+                  href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_file_en}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

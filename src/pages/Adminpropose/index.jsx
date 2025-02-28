@@ -9,11 +9,13 @@ function AdminProposeAgenda() {
   const [proposeagenda, setProposeAgenda] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: "", date: "" });
+  const [formData, setFormData] = useState({ title: "", title_en: "", date: "" });
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+    const [pdfFileEn, setPdfFileEn] = useState(null);
+  const [pdfFileNameEn, setPdfFileNameEn] = useState("");
 
   useEffect(() => {
     fetchProposeAgenda();
@@ -58,6 +60,8 @@ function AdminProposeAgenda() {
     formDataToSend.append("title", formData.title);
     formDataToSend.append("date", formData.date);
     if (pdfFile) formDataToSend.append("pdf_file", pdfFile);
+    formDataToSend.append("title_en", formData.title_en); // เพิ่ม title_en
+    if (pdfFileEn) formDataToSend.append("pdf_file_en", pdfFileEn); // เพิ่ม pdf_file_en
 
     try {
       let response;
@@ -107,12 +111,18 @@ function AdminProposeAgenda() {
   const handleEdit = (id) => {
     const agendaToEdit = proposeagenda.find((item) => item.id === id);
     if (agendaToEdit) {
-      setFormData({ title: agendaToEdit.title, date: agendaToEdit.date });
+      setFormData({
+        title: agendaToEdit.title,
+        title_en: agendaToEdit.title_en || "", // ✅ โหลด title_en
+        date: agendaToEdit.date
+      });
       setPdfFileName(agendaToEdit.pdf_url || "");
+      setPdfFileNameEn(agendaToEdit.pdf_url_en || ""); // ✅ โหลด pdf_url_en
       setEditId(id);
       setShowForm(true);
     }
   };
+  
 
   const handleDelete = (id) => {
     Swal.fire({
@@ -143,12 +153,15 @@ function AdminProposeAgenda() {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", date: "" });
+    setFormData({ title: "", title_en: "", date: "" }); // ✅ รีเซ็ต title_en
     setPdfFile(null);
     setPdfFileName("");
+    setPdfFileEn(null); // ✅ รีเซ็ต pdf_file_en
+    setPdfFileNameEn("");
     setEditId(null);
     setShowForm(false);
   };
+  
 
   if (loading) return <div className="loading">กำลังโหลดข้อมูล...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -168,7 +181,7 @@ function AdminProposeAgenda() {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="title" className="form-label">หัวข้อ</label>
+                <label htmlFor="title" className="form-label">หัวข้อ(TH)</label>
                 <input
                   type="text"
                   id="title"
@@ -178,6 +191,18 @@ function AdminProposeAgenda() {
                   required
                 />
               </div>
+              <div className="mb-3">
+  <label htmlFor="title_en" className="form-label">หัวข้อ (EN)</label>
+  <input
+    type="text"
+    id="title_en"
+    className="form-control"
+    value={formData.title_en}
+    onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
+    required
+  />
+</div>
+
               <div className="mb-3">
                 <label htmlFor="date" className="form-label">วันที่</label>
                 <input
@@ -209,6 +234,27 @@ function AdminProposeAgenda() {
                 </div>
                 {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
               </div>
+              <div className="mb-3">
+  <label>ไฟล์ PDF (English)</label>
+  <div className="custom-file">
+    <label htmlFor="pdf_file_en" className="custom-file-label btn btn-primary">
+      <i className="fa fa-upload"></i> อัปโหลดไฟล์
+    </label>
+    <input
+      type="file"
+      id="pdf_file_en"
+      className="custom-file-input"
+      accept="application/pdf"
+      onChange={(e) => {
+        setPdfFileEn(e.target.files[0]);
+        setPdfFileNameEn(e.target.files[0]?.name || "");
+      }}
+      style={{ display: "none" }}
+    />
+  </div>
+  {pdfFileNameEn && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileNameEn}</p>}
+</div>
+
               <button type="submit" className="btn btn-success">
                 {editId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
               </button>
@@ -232,9 +278,11 @@ function AdminProposeAgenda() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>หัวข้อ</th>
+                <th>หัวข้อ(TH)</th>
+                <th>หัวข้อ(EN)</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF(TH)</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF(EN)</th>
                 <th>วันที่</th>
-                <th style={{ width: '100px' }}>ไฟล์ PDF</th>
                 <th>การจัดการ</th>
               </tr>
             </thead>
@@ -243,7 +291,7 @@ function AdminProposeAgenda() {
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.title}</td>
-                  <td>{item.date}</td>
+                  <td>{item.title_en}</td>
                   <td>
                     <a
                       href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
@@ -257,6 +305,20 @@ function AdminProposeAgenda() {
                       />
                     </a>
                   </td>
+                  <td>
+                    <a
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url_en}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src="/public/assets/img/pdf.png"
+                        alt="ดาวน์โหลด"
+                        style={{ width: '70px', height: '70px' }}
+                      />
+                    </a>
+                  </td>
+                  <td>{item.date}</td>
                   <td>
                     <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(item.id)}>
                       <FontAwesomeIcon icon={faEdit} />

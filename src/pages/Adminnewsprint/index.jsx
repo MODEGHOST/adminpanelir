@@ -9,11 +9,14 @@ function Adminnewsprint() {
   const [newsprints, setNewsprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: '', date: '' });
+  const [formData, setFormData] = useState({ title: '', date: '', title_en: '' });
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfFileName, setPdfFileName] = useState('');
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+const [pdfFileEn, setPdfFileEn] = useState(null);
+const [pdfFileNameEn, setPdfFileNameEn] = useState('');
+
 
   useEffect(() => {
     fetchNewsprints();
@@ -58,6 +61,9 @@ function Adminnewsprint() {
     formDataToSend.append('title', formData.title);
     formDataToSend.append('date', formData.date);
     if (pdfFile) formDataToSend.append('pdf_file', pdfFile);
+    formDataToSend.append('title_en', formData.title_en);  // ✅ เพิ่ม title_en
+if (pdfFileEn) formDataToSend.append('pdf_file_en', pdfFileEn);  // ✅ เพิ่ม pdf_file_en
+
 
     try {
       let response;
@@ -111,6 +117,12 @@ function Adminnewsprint() {
       setEditId(id);
       setPdfFileName('');
       setShowForm(true);
+      setFormData({ 
+        title: newsprintToEdit.title, 
+        title_en: newsprintToEdit.title_en || '', // ✅ ตรวจสอบให้แน่ใจว่ามีค่า title_en
+        date: newsprintToEdit.date 
+      });
+      setPdfFileNameEn(newsprintToEdit.pdf_url_en || '');
     }
   };
 
@@ -150,6 +162,10 @@ function Adminnewsprint() {
     setPdfFileName('');
     setEditId(null);
     setShowForm(false);
+    setFormData({ title: '', title_en: '', date: '' });
+setPdfFileEn(null);
+setPdfFileNameEn('');
+
   };
 
   if (loading) return <div className="loading">กำลังโหลดข้อมูล...</div>;
@@ -174,7 +190,7 @@ function Adminnewsprint() {
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label htmlFor="title" className="form-label">
-                  หัวข้อข่าว
+                  หัวข้อข่าว(Th)
                 </label>
                 <input
                   type="text"
@@ -187,6 +203,18 @@ function Adminnewsprint() {
                   required
                 />
               </div>
+              <div className="mb-3">
+  <label htmlFor="title_en" className="form-label">หัวข้อข่าว (En)</label>
+  <input 
+    type="text" 
+    id="title_en" 
+    className="form-control" 
+    value={formData.title_en} 
+    onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} 
+    required 
+  />
+</div>
+
               <div className="mb-3">
                 <label htmlFor="date" className="form-label">
                   วันที่
@@ -227,6 +255,27 @@ function Adminnewsprint() {
                   <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>
                 )}
               </div>
+              <div className="mb-3">
+  <label>ไฟล์ PDF (English)</label>
+  <div className="custom-file">
+    <label htmlFor="pdf_file_en" className="custom-file-label btn btn-primary">
+      <i className="fa fa-upload"></i> อัปโหลดไฟล์
+    </label>
+    <input
+      type="file"
+      id="pdf_file_en"
+      className="custom-file-input"
+      accept="application/pdf"
+      onChange={(e) => {
+        setPdfFileEn(e.target.files[0]);
+        setPdfFileNameEn(e.target.files[0]?.name || '');
+      }}
+      style={{ display: 'none' }}
+    />
+  </div>
+  {pdfFileNameEn && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileNameEn}</p>}
+</div>
+
 
               <button type="submit" className="btn btn-success">
                 {editId ? 'บันทึกการแก้ไข' : 'เพิ่มข่าว'}
@@ -251,9 +300,11 @@ function Adminnewsprint() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>หัวข้อข่าว</th>
+                <th>หัวข้อข่าว(TH)</th>
+                <th>หัวข้อข่าว(EN)</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF(TH)</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF(EN)</th>
                 <th>วันที่</th>
-                <th style={{ width: '100px' }}>ไฟล์ PDF</th>
                 <th>การจัดการ</th>
               </tr>
             </thead>
@@ -262,7 +313,7 @@ function Adminnewsprint() {
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.title}</td>
-                  <td>{item.date}</td>
+                  <td>{item.title_en}</td>
                   <td>
                     <a
                       href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
@@ -276,6 +327,20 @@ function Adminnewsprint() {
                       />
                     </a>
                   </td>
+                  <td>
+                    <a
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url_en}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src="/public/assets/img/pdf.png"
+                        alt="ดาวน์โหลด"
+                        style={{ width: '70px', height: '70px' }}
+                      />
+                    </a>
+                  </td>
+                  <td>{item.date}</td>
                   <td>
                     <button
                       className="btn btn-warning btn-sm me-2"

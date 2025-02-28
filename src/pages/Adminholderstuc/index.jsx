@@ -8,9 +8,11 @@ function HolderStucManager() {
   const [formData, setFormData] = useState({
     id: null,
     holder_name: "",
+    holder_name_en: "", // ✅ เพิ่ม holder_name_en
     shares_count: "",
     share_percentage: "",
   });
+  
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,7 @@ function HolderStucManager() {
       .post(`${import.meta.env.VITE_API_KEY}/api/holders`, formData)
       .then(() => {
         fetchHolderStucs();
-        setFormData({ id: null, holder_name: "", shares_count: "", share_percentage: "" });
+        setFormData({ id: null, holder_name: "", holder_name_en: "", shares_count: "", share_percentage: "" });
         setShowForm(false);
       })
       .catch((error) => {
@@ -142,6 +144,20 @@ function HolderStucManager() {
                   />
                 </div>
                 <div className="col-md-4">
+                  <label htmlFor="holder_name_en" className="form-label">
+                    ชื่อผู้ถือหุ้น
+                  </label>
+                  <input
+                    type="text"
+                    id="holder_name_en"
+                    name="holder_name_en"
+                    className="form-control"
+                    value={formData.holder_name_en}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="col-md-4">
                   <label htmlFor="shares_count" className="form-label">
                     จำนวนหุ้น
                   </label>
@@ -186,7 +202,8 @@ function HolderStucManager() {
           <thead>
             <tr>
               <th>#</th>
-              <th>ชื่อผู้ถือหุ้น</th>
+              <th>ชื่อผู้ถือหุ้น(TH)</th>
+              <th>ชื่อผู้ถือหุ้น(EN)</th>
               <th>จำนวนหุ้น</th>
               <th>% ของจำนวนหุ้นทั้งหมด</th>
               <th>การจัดการ</th>
@@ -198,6 +215,7 @@ function HolderStucManager() {
                 <tr key={holderStuc.id}>
                   <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td>{holderStuc.holder_name}</td>
+                  <td>{holderStuc.holder_name_en}</td>
                   <td>{holderStuc.shares_count}</td>
                   <td>{holderStuc.share_percentage}%</td>
                   <td>

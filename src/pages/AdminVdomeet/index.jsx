@@ -10,7 +10,7 @@ function AdminVdomeet() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: "", youtube_link: "", published_date: "" });
+  const [formData, setFormData] = useState({ title: "",title_en: "", youtube_link: "", published_date: "" });
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -69,6 +69,7 @@ function AdminVdomeet() {
     if (videoToEdit) {
       setFormData({
         title: videoToEdit.title,
+        title_en: videoToEdit.title_en,
         youtube_link: videoToEdit.youtube_link,
         published_date: videoToEdit.published_date
       });
@@ -102,7 +103,7 @@ function AdminVdomeet() {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", youtube_link: "", published_date: "" });
+    setFormData({ title: "",title_en: "", youtube_link: "", published_date: "" });
     setEditId(null);
     setShowForm(false);
   };
@@ -125,13 +126,24 @@ function AdminVdomeet() {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="title" className="form-label">ชื่อวิดีโอ</label>
+                <label htmlFor="title" className="form-label">ชื่อวิดีโอ(TH)</label>
                 <input
                   type="text"
                   id="title"
                   className="form-control"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="title_en" className="form-label">ชื่อวิดีโอ(EN)</label>
+                <input
+                  type="text"
+                  id="title_en"
+                  className="form-control"
+                  value={formData.title_en}
+                  onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
                   required
                 />
               </div>
@@ -180,7 +192,8 @@ function AdminVdomeet() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>ชื่อวิดีโอ</th>
+                <th>ชื่อวิดีโอ(TH)</th>
+                <th>ชื่อวิดีโอ(EN)</th>
                 <th>ลิงก์</th>
                 <th>วันที่เผยแพร่</th>
                 <th>การจัดการ</th>
@@ -191,6 +204,7 @@ function AdminVdomeet() {
                 <tr key={video.id}>
                   <td>{index + 1}</td>
                   <td>{video.title}</td>
+                  <td>{video.title_en}</td>
                   <td>
                     <a href={video.youtube_link} target="_blank" rel="noopener noreferrer">
                       ดูวิดีโอ

@@ -9,11 +9,13 @@ function Adminpolicypayment() {
   const [policypayment, setPolicypayment] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ title: "", date: "" });
+  const [formData, setFormData] = useState({ title: "", title_en: "", date: "" });
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfFileName, setPdfFileName] = useState("");
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [pdfFileEn, setPdfFileEn] = useState(null);
+const [pdfFileNameEn, setPdfFileNameEn] = useState("");
 
   useEffect(() => {
     fetchPolicypayment();
@@ -58,6 +60,9 @@ function Adminpolicypayment() {
     formDataToSend.append("title", formData.title);
     formDataToSend.append("date", formData.date);
     if (pdfFile) formDataToSend.append("pdf_file", pdfFile);
+    formDataToSend.append("title_en", formData.title_en); // เพิ่ม title_en
+if (pdfFileEn) formDataToSend.append("pdf_file_en", pdfFileEn); // เพิ่ม pdf_file_en
+
 
     try {
       let response;
@@ -107,12 +112,18 @@ function Adminpolicypayment() {
   const handleEdit = (id) => {
     const paymentToEdit = policypayment.find((item) => item.id === id);
     if (paymentToEdit) {
-      setFormData({ title: paymentToEdit.title, date: paymentToEdit.date });
+      setFormData({ 
+        title: paymentToEdit.title, 
+        title_en: paymentToEdit.title_en || "", // โหลดค่า title_en
+        date: paymentToEdit.date
+      });
       setPdfFileName(paymentToEdit.pdf_url || "");
+      setPdfFileNameEn(paymentToEdit.pdf_url_en || ""); // โหลดค่า pdf_file_en
       setEditId(id);
       setShowForm(true);
     }
   };
+  
 
   const handleDelete = (id) => {
     Swal.fire({
@@ -148,6 +159,9 @@ function Adminpolicypayment() {
     setPdfFileName("");
     setEditId(null);
     setShowForm(false);
+    setFormData({ title: "", title_en: "", date: "" });
+    setPdfFileEn(null);
+    setPdfFileNameEn("");
   };
 
   if (loading) return <div className="loading">กำลังโหลดข้อมูล...</div>;
@@ -168,7 +182,7 @@ function Adminpolicypayment() {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="title" className="form-label">หัวข้อ</label>
+                <label htmlFor="title" className="form-label">หัวข้อ(TH)</label>
                 <input
                   type="text"
                   id="title"
@@ -178,6 +192,17 @@ function Adminpolicypayment() {
                   required
                 />
               </div>
+              <div className="mb-3">
+  <label htmlFor="title_en" className="form-label">หัวข้อ (EN)</label>
+  <input 
+    type="text" 
+    id="title_en" 
+    className="form-control" 
+    value={formData.title_en} 
+    onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} 
+    required 
+  />
+</div>
               <div className="mb-3">
                 <label htmlFor="date" className="form-label">วันที่</label>
                 <input
@@ -190,7 +215,7 @@ function Adminpolicypayment() {
                 />
               </div>
               <div className="mb-3">
-                <label>ไฟล์ PDF</label>
+                <label>ไฟล์ PDF (TH)</label>
                 <div className="custom-file">
                   <label htmlFor="pdf_file" className="custom-file-label btn btn-primary">
                     <i className="fa fa-upload"></i> อัปโหลดไฟล์
@@ -209,6 +234,27 @@ function Adminpolicypayment() {
                 </div>
                 {pdfFileName && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileName}</p>}
               </div>
+              <div className="mb-3">
+  <label>ไฟล์ PDF (EN)</label>
+  <div className="custom-file">
+    <label htmlFor="pdf_file_en" className="custom-file-label btn btn-primary">
+      <i className="fa fa-upload"></i> อัปโหลดไฟล์
+    </label>
+    <input
+      type="file"
+      id="pdf_file_en"
+      className="custom-file-input"
+      accept="application/pdf"
+      onChange={(e) => {
+        setPdfFileEn(e.target.files[0]);
+        setPdfFileNameEn(e.target.files[0]?.name || "");
+      }}
+      style={{ display: "none" }}
+    />
+  </div>
+  {pdfFileNameEn && <p className="mt-2">ไฟล์ที่เลือก: {pdfFileNameEn}</p>}
+</div>
+
               <button type="submit" className="btn btn-success">
                 {editId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
               </button>
@@ -232,9 +278,11 @@ function Adminpolicypayment() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>หัวข้อ</th>
+                <th>หัวข้อ(TH)</th>
+                <th>หัวข้อ(EN)</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF(TH)</th>
+                <th style={{ width: '100px' }}>ไฟล์ PDF(EN)</th>
                 <th>วันที่</th>
-                <th style={{ width: '100px' }}>ไฟล์ PDF</th>
                 <th>การจัดการ</th>
               </tr>
             </thead>
@@ -243,7 +291,7 @@ function Adminpolicypayment() {
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.title}</td>
-                  <td>{item.date}</td>
+                  <td>{item.title_en}</td>
                   <td>
                     <a
                       href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url}`}
@@ -257,6 +305,20 @@ function Adminpolicypayment() {
                       />
                     </a>
                   </td>
+                  <td>
+                    <a
+                      href={`${import.meta.env.VITE_PDF_KEY}/uploads/pdf_files/${item.pdf_url_en}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src="/public/assets/img/pdf.png"
+                        alt="ดาวน์โหลด"
+                        style={{ width: '70px', height: '70px' }}
+                      />
+                    </a>
+                  </td>
+                  <td>{item.date}</td>
                   <td>
                     <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(item.id)}>
                       <FontAwesomeIcon icon={faEdit} />
